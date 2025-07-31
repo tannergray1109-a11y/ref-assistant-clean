@@ -84,6 +84,22 @@ const Store = (() => {
     clearAll() {
       state = JSON.parse(JSON.stringify(defaultData));
       persist();
+    },
+    
+    // Methods for cloud sync
+    getAllData() {
+      return {
+        games: state.games,
+        expenses: state.expenses,
+        mileage: state.mileage
+      };
+    },
+    
+    setAllData(data) {
+      if (data.games) state.games = data.games;
+      if (data.expenses) state.expenses = data.expenses;
+      if (data.mileage) state.mileage = data.mileage;
+      persist();
     }
   };
 })();

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Ref Assistant</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional referee game and expense tracking application">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Ref Assistant">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+    <div class="auth-page-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <div class="whistle-icon">
+                        <svg viewBox="0 0 32 32" fill="currentColor">
+                            <!-- Background circle -->
+                            <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
+                            
+                            <!-- Letter R - Clean, bold design -->
+                            <g fill="white">
+                                <!-- R vertical stroke -->
+                                <rect x="8" y="7" width="3" height="18" rx="1"/>
+                                
+                                <!-- R top horizontal -->
+                                <rect x="8" y="7" width="11" height="3" rx="1"/>
+                                
+                                <!-- R middle horizontal -->
+                                <rect x="8" y="14" width="8" height="3" rx="1"/>
+                                
+                                <!-- R top vertical -->
+                                <rect x="16" y="7" width="3" height="10" rx="1"/>
+                                
+                                <!-- R diagonal leg -->
+                                <path d="M 13 17 L 19 25 L 16 25 L 11 17 Z"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <h1>Ref Assistant</h1>
+                </div>
+                <h2 id="authTitle">Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to access your referee dashboard</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn primary auth-submit">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-spinner hidden">
+                        <div class="spinner"></div>
+                    </span>
+                </button>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" required placeholder="Enter your full name" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" required placeholder="Enter your email" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required minlength="6" placeholder="Create a password (6+ characters)" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirm your password" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn primary auth-submit">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-spinner hidden">
+                        <div class="spinner"></div>
+                    </span>
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span id="authSwitchText">New to Ref Assistant?</span>
+            </div>
+            <button type="button" id="authSwitchBtn" class="btn secondary">Create Account</button>
+            
+            <div id="authError" class="auth-error hidden"></div>
+        </div>
+        
+        <!-- Features sidebar -->
+        <div class="auth-features">
+            <h3>Manage Your Referee Career</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">📅</div>
+                    <div>
+                        <h4>Game Tracking</h4>
+                        <p>Keep track of all your scheduled games, payments, and availability updates</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💰</div>
+                    <div>
+                        <h4>Expense Management</h4>
+                        <p>Track expenses with receipt photos for easy tax preparation</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div>
+                        <h4>Reports & Analytics</h4>
+                        <p>Generate year-to-date summaries and detailed financial reports</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚗</div>
+                    <div>
+                        <h4>Mileage Tracking</h4>
+                        <p>Log travel distances and link them to specific games</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">☁️</div>
+                    <div>
+                        <h4>Cloud Backup</h4>
+                        <p>Your data is securely backed up and synced across devices</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCa_QlgP14-ZHaZslG1JN0jLtSUYtxlUNE",
+            authDomain: "sample-firebase-ai-app-a3ded.firebaseapp.com",
+            projectId: "sample-firebase-ai-app-a3ded",
+            storageBucket: "sample-firebase-ai-app-a3ded.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+        window.firebaseAuth = getAuth(app);
+        window.firebaseDb = getFirestore(app);
+    </script>
+    
+    <script src="js/auth-page.js"></script>
+</body>
+</html>
