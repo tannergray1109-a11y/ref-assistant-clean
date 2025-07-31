@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ref Assistant</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional referee game and expense tracking application">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Ref Assistant">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    
+    <!-- Standard Favicon Sizes -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+    
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <aside>
+            <div class="logo" id="logoButton">
+                <div class="whistle-icon">
+                    <svg viewBox="0 0 32 32" fill="currentColor">
+                        <!-- Background circle -->
+                        <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
+                        
+                        <!-- Letter R - Clean, bold design -->
+                        <g fill="white">
+                            <!-- R vertical stroke -->
+                            <rect x="8" y="7" width="3" height="18" rx="1"/>
+                            
+                            <!-- R top horizontal stroke -->
+                            <rect x="8" y="7" width="10" height="3" rx="1"/>
+                            
+                            <!-- R middle horizontal stroke -->
+                            <rect x="8" y="14" width="8" height="3" rx="1"/>
+                            
+                            <!-- R top vertical stroke -->
+                            <rect x="16" y="7" width="3" height="10" rx="1"/>
+                            
+                            <!-- R diagonal leg -->
+                            <path d="M 13 17 L 19 25 L 16 25 L 11 17 Z"/>
+                        </g>
+                    </svg>
+                </div>
+                <h1>Ref Assistant</h1>
+            </div>
+            <button class="nav-btn active" data-screen="games">Games</button>
+            <button class="nav-btn" data-screen="mileage">Mileage</button>
+            <button class="nav-btn" data-screen="expenses">Expenses</button>
+            <button class="nav-btn" data-screen="reports">Reports</button>
+            <div class="spacer"></div>
+            <button class="nav-btn" data-screen="settings">Settings</button>
+        </aside>
+
+        <main>
+            <!-- Profile Picture in Top Right -->
+            <div id="profilePicture" class="profile-picture hidden">
+                <div class="avatar" id="userAvatar">
+                    <span id="userInitials">U</span>
+                </div>
+                <div id="profileDropdown" class="profile-dropdown hidden">
+                    <div class="dropdown-item" data-action="settings">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                        </svg>
+                        Settings
+                    </div>
+                    <div class="dropdown-item" data-action="edit-profile">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                        </svg>
+                        Edit Profile
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="screen">
+                <h2>Dashboard</h2>
+                <div class="cards">
+                    <div class="card">
+                        <div class="muted">Games This Month</div>
+                        <div id="dashGamesThisMonth" style="font-size: 24px; font-weight: 600;">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="muted">Need Availability Update</div>
+                        <div id="dashNeedUpdate" style="font-size: 24px; font-weight: 600;">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="muted">Unpaid Games</div>
+                        <div id="dashUnpaid" style="font-size: 24px; font-weight: 600;">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="muted">YTD Expenses</div>
+                        <div id="dashYTDExpenses" style="font-size: 24px; font-weight: 600;">$0</div>
+                    </div>
+                </div>
+                <div class="upcoming-section">
+                    <h3>Upcoming (Next 7 Days)</h3>
+                    <div id="upcomingGames" class="upcoming-games-list">
+                        <!-- Upcoming games will be populated here -->
+                    </div>
+                    <button class="primary-btn" onclick="showScreen('games')">Go to Games</button>
+                </div>
+            </section>
+
+            <!-- GAMES -->
+            <section id="games" class="screen hidden">
+                <div class="screen-header">
+                    <h2>Games</h2>
+                    <button class="primary-btn" id="addGameBtn">Add Game</button>
+                </div>
+                <div class="games-list" id="gamesList">
+                    <!-- Games will be populated here -->
+                </div>
+            </section>
+
+            <!-- MILEAGE -->
+            <section id="mileage" class="screen hidden">
+                <div class="screen-header">
+                    <h2>Mileage</h2>
+                    <button class="primary-btn" id="addMileageBtn">Add Mileage</button>
+                </div>
+                <div class="mileage-list" id="mileageList">
+                    <!-- Mileage entries will be populated here -->
+                </div>
+            </section>
+
+            <!-- EXPENSES -->
+            <section id="expenses" class="screen hidden">
+                <div class="screen-header">
+                    <h2>Expenses</h2>
+                    <button class="primary-btn" id="addExpenseBtn">Add Expense</button>
+                </div>
+                <div class="expenses-list" id="expensesList">
+                    <!-- Expenses will be populated here -->
+                </div>
+            </section>
+
+            <!-- REPORTS -->
+            <section id="reports" class="screen hidden">
+                <h2>Reports</h2>
+                <div class="report-cards">
+                    <div class="card">
+                        <h3>Tax Year Summary</h3>
+                        <div id="taxYearSummary">
+                            <!-- Tax year data will be populated here -->
+                        </div>
+                        <button class="secondary-btn" id="exportTaxBtn">Export Tax Report</button>
+                    </div>
+                    <div class="card">
+                        <h3>Monthly Breakdown</h3>
+                        <div id="monthlyBreakdown">
+                            <!-- Monthly data will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section id="settings" class="screen hidden">
+                <h2>Settings</h2>
+                <div class="settings-section">
+                    <h3>Profile</h3>
+                    <div class="form-group">
+                        <label for="displayName">Display Name</label>
+                        <input type="text" id="displayName" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultRate">Default Rate (per game)</label>
+                        <input type="number" id="defaultRate" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="mileageRate">Mileage Rate (per mile)</label>
+                        <input type="number" id="mileageRate" placeholder="0.67" step="0.01">
+                    </div>
+                    <button class="primary-btn" id="saveSettingsBtn">Save Settings</button>
+                </div>
+                <div class="settings-section">
+                    <h3>Account</h3>
+                    <button class="secondary-btn" id="signOutBtn">Sign Out</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="whistle-icon">
+                    <svg viewBox="0 0 32 32" fill="currentColor">
+                        <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
+                        <g fill="white">
+                            <rect x="8" y="7" width="3" height="18" rx="1"/>
+                            <rect x="8" y="7" width="10" height="3" rx="1"/>
+                            <rect x="8" y="14" width="8" height="3" rx="1"/>
+                            <rect x="16" y="7" width="3" height="10" rx="1"/>
+                            <path d="M 13 17 L 19 25 L 16 25 L 11 17 Z"/>
+                        </g>
+                    </svg>
+                </div>
+                <h1>Ref Assistant</h1>
+                <p>Professional referee game and expense tracking</p>
+            </div>
+            <div class="auth-buttons">
+                <button id="signInBtn" class="auth-btn primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Sync Indicator -->
+    <div id="syncIndicator" class="sync-indicator hidden">
+        <span id="syncStatus">Data synced</span>
+    </div>
+
+    <!-- Modals will be dynamically inserted here -->
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/mileage.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/sw-register.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+/* Additional auth-specific styles */
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-btn svg {
+  flex-shrink: 0;
+}
+
+/* Auth screen specific overrides */
+.auth-screen .whistle-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+}
+
+.auth-screen .whistle-icon svg {
+  width: 28px;
+  height: 28px;
+}
