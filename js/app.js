@@ -1,20 +1,22 @@
 /**
  * Basic Router-ish screen switcher
  */
+const screens = document.querySelectorAll(".screen");
+const navBtns = document.querySelectorAll(".nav-btn");
 
 function showScreen(name) {
-  const screens = document.querySelectorAll(".screen");
-  const navBtns = document.querySelectorAll(".nav-btn");
+  console.log('📱 showScreen called with:', name);
   
   screens.forEach(s => s.classList.add("hidden"));
   const targetScreen = document.getElementById(name);
   
   if (!targetScreen) {
-    console.error('Screen not found:', name);
+    console.error('❌ Screen not found:', name);
     return;
   }
   
   targetScreen.classList.remove("hidden");
+  console.log('✅ Screen shown:', name);
   
   // Update navigation buttons (remove active from all, then add to current if it exists)
   navBtns.forEach(b => b.classList.remove("active"));
@@ -24,100 +26,22 @@ function showScreen(name) {
   }
   
   if (name === "dashboard") renderDashboard();
-  if (name === "games") { 
-    renderGamesTable(); 
-    hideGameForm(); 
-    // Check if we should auto-open the add game form (from calendar redirect)
-    if (sessionStorage.getItem('openAddGameForm') === 'true') {
-      sessionStorage.removeItem('openAddGameForm');
-      // Small delay to ensure the games screen is fully rendered
-      setTimeout(() => {
-        const addGameBtn = document.getElementById('btnAddGame');
-        if (addGameBtn) {
-          addGameBtn.click();
-        }
-      }, 100);
-    }
+  if (name === "games") { renderGamesTable(); hideGameForm(); }
+  if (name === "calendar") {
+    console.log('🗓️ Calendar screen selected, calling renderCalendar()');
+    renderCalendar();
   }
   if (name === "mileage") { renderMileageGameOptions(); renderMileageTable(); }
   if (name === "expenses") { renderExpenseGameOptions(); renderExpensesTable(); }
   if (name === "reports") renderReports();
 }
+navBtns.forEach(b => b.addEventListener("click", () => showScreen(b.dataset.screen)));
 
 // Logo click handler for dashboard
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 App DOM Content Loaded - Initializing...');
-  
-  // Set up navigation button listeners
-  const navBtns = document.querySelectorAll('.nav-btn');
-  console.log('🧭 Found navigation buttons:', navBtns.length);
-  
   const logoButton = document.getElementById('logoButton');
   if (logoButton) {
-    logoButton.addEventListener('click', () => {
-      showScreen('dashboard');
-    });
-    console.log('✅ Logo button listener set up');
-  }
-  
-  // Hamburger menu functionality
-  const hamburgerBtn = document.getElementById('hamburgerBtn');
-  const sidebar = document.getElementById('sidebar');
-  const navOverlay = document.getElementById('navOverlay');
-  
-  function toggleNav() {
-    if (hamburgerBtn) hamburgerBtn.classList.toggle('active');
-    if (sidebar) sidebar.classList.toggle('active');
-    if (navOverlay) navOverlay.classList.toggle('active');
-  }
-  
-  function closeNav() {
-    if (hamburgerBtn) hamburgerBtn.classList.remove('active');
-    if (sidebar) sidebar.classList.remove('active');
-    if (navOverlay) navOverlay.classList.remove('active');
-  }
-  
-  if (hamburgerBtn) {
-    hamburgerBtn.addEventListener('click', toggleNav);
-    console.log('✅ Hamburger menu listener set up');
-  }
-  
-  if (navOverlay) {
-    navOverlay.addEventListener('click', closeNav);
-    console.log('✅ Navigation overlay listener set up');
-  }
-  
-  // Set up navigation button listeners - navigate and close menu
-  navBtns.forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-      showScreen(btn.dataset.screen);
-      closeNav();
-    });
-  });
-  console.log('✅ Navigation button listeners set up');
-  
-  // Initialize all sections
-  console.log('🔧 Initializing app sections...');
-  initializeGamesSection();
-  initializeMileageSection();
-  initializeExpensesSection();
-  initializeMileageCSVExport();
-  initializeSettingsSection();
-  initializeThemeToggle();
-  initializePhotoUpload();
-  console.log('✅ All app sections initialized');
-  
-  // Initialize the data and render dashboard
-  renderDashboard();
-  
-  // Check for hash navigation on page load
-  const hash = window.location.hash.substring(1);
-  if (hash && document.getElementById(hash) && window.location.href.includes('#')) {
-    showScreen(hash);
-    // Clear the hash after navigation to prevent interference
-    history.replaceState(null, null, window.location.pathname);
-  } else {
-    showScreen("dashboard");
+    logoButton.addEventListener('click', () => showScreen('dashboard'));
   }
 });
 
@@ -187,6 +111,11 @@ function renderDashboard() {
       // Update dashboard metrics immediately
       renderDashboard();
       
+      // Update calendar if visible
+      if (!document.getElementById("calendar").classList.contains("hidden")) {
+        renderCalendar();
+      }
+      
       // If games screen is visible, update it too
       if (!document.getElementById("games").classList.contains("hidden")) {
         renderGamesTable();
@@ -198,164 +127,44 @@ function renderDashboard() {
 /**
  * GAMES
  */
+const gamesTableBody = document.querySelector("#gamesTable tbody");
+const btnAddGame = document.getElementById("btnAddGame");
+const gameFormSection = document.getElementById("gameFormSection");
+const gameForm = document.getElementById("gameForm");
+const gameFormTitle = document.getElementById("gameFormTitle");
+const deleteGameBtn = document.getElementById("deleteGameBtn");
+const filterUpdated = document.getElementById("filterUpdated");
+const filterPaid = document.getElementById("filterPaid");
+const filterFrom = document.getElementById("filterFrom");
+const filterTo = document.getElementById("filterTo");
+const btnClearFilters = document.getElementById("btnClearFilters");
 
 let editingGameId = null;
 
-function initializeGamesSection() {
-  console.log('🎮 Initializing Games Section...');
-  
-  const gamesTableBody = document.querySelector("#gamesTable tbody");
-  const btnAddGame = document.getElementById("btnAddGame");
-  const gameFormSection = document.getElementById("gameFormSection");
-  const gameForm = document.getElementById("gameForm");
-  const gameFormTitle = document.getElementById("gameFormTitle");
-  const deleteGameBtn = document.getElementById("deleteGameBtn");
-  const filterUpdated = document.getElementById("filterUpdated");
-  const filterPaid = document.getElementById("filterPaid");
-  const filterFrom = document.getElementById("filterFrom");
-  const filterTo = document.getElementById("filterTo");
-  const btnClearFilters = document.getElementById("btnClearFilters");
-
-  console.log('🔍 Games section elements found:', {
-    gamesTableBody: !!gamesTableBody,
-    btnAddGame: !!btnAddGame,
-    gameFormSection: !!gameFormSection,
-    gameForm: !!gameForm,
-    gameFormTitle: !!gameFormTitle,
-    deleteGameBtn: !!deleteGameBtn,
-    filterUpdated: !!filterUpdated,
-    filterPaid: !!filterPaid,
-    filterFrom: !!filterFrom,
-    filterTo: !!filterTo,
-    btnClearFilters: !!btnClearFilters
-  });
-
-  if (btnAddGame) {
-    console.log('✅ Add Game button found, setting up click handler');
-    btnAddGame.addEventListener("click", () => {
-      console.log('➕ Add Game button clicked');
-      openGameForm(null);
-    });
-  } else {
-    console.error('❌ Add Game button not found - check if btnAddGame element exists');
-  }
-  
-  const cancelGameForm = document.getElementById("cancelGameForm");
-  if (cancelGameForm) {
-    cancelGameForm.addEventListener("click", hideGameForm);
-  }
-  
-  // Game form submit handler
-  if (gameForm) {
-    console.log('✅ Game form found, setting up submit handler');
-    gameForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      console.log('🎮 Game form submitted');
-      
-      const formData = new FormData(gameForm);
-      const payload = {
-        date: formData.get("date"),
-        time: formData.get("time"),
-        league: formData.get("league"),
-        pay: Number(formData.get("pay") || 0),
-        home: formData.get("home"),
-        away: formData.get("away"),
-      };
-      
-      console.log('📋 Game form payload:', payload);
-      
-      // Validate required fields
-      if (!payload.date || !payload.time) {
-        alert('Please fill in both date and time fields');
-        return;
-      }
-      
-      try {
-        let gameData;
-        if (editingGameId) {
-          console.log('✏️ Updating existing game:', editingGameId);
-          const existingGame = Store.getState().games.find(g => g.id === editingGameId);
-          Store.updateGame(editingGameId, payload);
-          gameData = { ...existingGame, ...payload };
-          
-          // Update calendar event if connected and event exists
-          if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected() && existingGame.calendarEventId) {
-            await Calendar.updateGameEvent(gameData, existingGame.calendarEventId);
-          }
-        } else {
-          console.log('➕ Adding new game');
-          gameData = Store.addGame({ ...payload, updated: false, paid: false });
-          console.log('✅ Game added with ID:', gameData.id);
-          
-          // Create calendar event if connected
-          if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected()) {
-            const eventId = await Calendar.createGameEvent(gameData);
-            if (eventId) {
-              Store.updateGame(gameData.id, { calendarEventId: eventId });
-            }
-          }
-        }
-        
-        console.log('🔄 Refreshing UI...');
-        renderGamesTable();
-        renderDashboard(); // Refresh dashboard after game changes
-        hideGameForm();
-        
-        // Trigger data sync
-        if (typeof DataService !== 'undefined' && DataService.autoSync) {
-          console.log('☁️ Triggering auto-sync...');
-          DataService.autoSync();
-        }
-        
-        console.log('✅ Game form submission completed successfully');
-      } catch (error) {
-        console.error('❌ Error saving game:', error);
-        alert('Error saving game: ' + error.message);
-      }
-    });
-    console.log('✅ Game form submit handler set up');
-  } else {
-    console.error('❌ Game form not found - check if gameForm element exists');
-  }
-  
-  if (btnClearFilters) {
-    btnClearFilters.addEventListener("click", () => {
-      if (filterUpdated) filterUpdated.value = 'all';
-      if (filterPaid) filterPaid.value = 'all';
-      if (filterFrom) filterFrom.value = '';
-      if (filterTo) filterTo.value = '';
-      renderGamesTable();
-    });
-  }
-  
-  [filterUpdated, filterPaid, filterFrom, filterTo].forEach(el => {
-    if (el) {
-      el.addEventListener("change", renderGamesTable);
-    }
-  });
-}
+btnAddGame.addEventListener("click", () => openGameForm(null));
+document.getElementById("cancelGameForm").addEventListener("click", hideGameForm);
+btnClearFilters.addEventListener("click", () => {
+  filterUpdated.value = 'all';
+  filterPaid.value = 'all';
+  filterFrom.value = '';
+  filterTo.value = '';
+  renderGamesTable();
+});
+[filterUpdated, filterPaid, filterFrom, filterTo].forEach(el => el.addEventListener("change", renderGamesTable));
 
 function renderGamesTable() {
   const { games } = Store.getState();
-  const gamesTableBody = document.querySelector("#gamesTable tbody");
-  const filterUpdated = document.getElementById("filterUpdated");
-  const filterPaid = document.getElementById("filterPaid");
-  const filterFrom = document.getElementById("filterFrom");
-  const filterTo = document.getElementById("filterTo");
-  
-  if (!gamesTableBody) return;
-  
   gamesTableBody.innerHTML = "";
 
-  const from = (filterFrom && filterFrom.value) ? new Date(filterFrom.value) : null;
-  const to = (filterTo && filterTo.value) ? new Date(filterTo.value) : null;
+  const from = filterFrom.value ? new Date(filterFrom.value) : null;
+  const to = filterTo.value ? new Date(filterTo.value) : null;
 
   let rows = [...games];
-  if (filterUpdated && filterUpdated.value !== 'all') {
+  if (filterUpdated.value !== 'all') {
     const want = filterUpdated.value === 'yes';
     rows = rows.filter(g => !!g.updated === want);
   }
-  if (filterPaid && filterPaid.value !== 'all') {
+  if (filterPaid.value !== 'all') {
     const want = filterPaid.value === 'yes';
     rows = rows.filter(g => !!g.paid === want);
   }
@@ -389,6 +198,11 @@ function renderGamesTable() {
       const flag = e.target.dataset.flag;
       Store.updateGame(id, { [flag]: e.target.checked });
       renderDashboard(); // Update dashboard metrics and upcoming games
+      
+      // Update calendar if visible
+      if (!document.getElementById("calendar").classList.contains("hidden")) {
+        renderCalendar();
+      }
     });
   });
 
@@ -402,181 +216,111 @@ function renderGamesTable() {
 }
 
 function openGameForm(id) {
-  console.log('📝 openGameForm called with id:', id);
-  
-  const gameForm = document.getElementById("gameForm");
-  const gameFormTitle = document.getElementById("gameFormTitle");
-  const gameFormSection = document.getElementById("gameFormSection");
-  const deleteGameBtn = document.getElementById("deleteGameBtn");
-  
-  console.log('🔍 Game form elements found:', {
-    gameForm: !!gameForm,
-    gameFormTitle: !!gameFormTitle,
-    gameFormSection: !!gameFormSection,
-    deleteGameBtn: !!deleteGameBtn
-  });
-  
-  if (!gameForm || !gameFormTitle || !gameFormSection || !deleteGameBtn) {
-    console.error('❌ Game form elements not found');
-    return;
-  }
-  
   const state = Store.getState();
   editingGameId = id;
   gameForm.reset();
   deleteGameBtn.classList.toggle("hidden", !id);
-  
   if (id) {
-    console.log('✏️ Editing existing game');
     gameFormTitle.textContent = "Edit Game";
     const g = state.games.find(x => x.id === id);
-    if (g) {
-      gameForm.date.value = g.date;
-      gameForm.time.value = g.time;
-      gameForm.league.value = g.league || "";
-      gameForm.pay.value = g.pay || "";
-      gameForm.home.value = g.home || "";
-      gameForm.away.value = g.away || "";
-      console.log('📋 Form populated with game data:', g);
-    } else {
-      console.error('❌ Game not found with id:', id);
-    }
+    gameForm.date.value = g.date;
+    gameForm.time.value = g.time;
+    gameForm.league.value = g.league || "";
+    gameForm.pay.value = g.pay || "";
+    gameForm.home.value = g.home || "";
+    gameForm.away.value = g.away || "";
   } else {
-    console.log('➕ Adding new game');
     gameFormTitle.textContent = "Add Game";
   }
-  
   gameFormSection.classList.remove("hidden");
-  console.log('✅ Game form opened and visible');
   gameForm.scrollIntoView({ behavior: "smooth" });
 
-  // Remove any existing event listeners to prevent duplicates
-  deleteGameBtn.onclick = null;
-  
-  deleteGameBtn.onclick = async (event) => {
-    event.preventDefault();
-    console.log('🗑️ Delete game button clicked for ID:', editingGameId);
-    console.log('🔍 Current editing game ID:', editingGameId);
-    console.log('🔍 Delete button element:', deleteGameBtn);
-    
+  deleteGameBtn.onclick = async () => {
     if (!editingGameId) {
-      console.error('❌ No game ID to delete');
-      alert('Error: No game selected for deletion');
+      alert('No game selected for deletion');
       return;
     }
     
     if (confirm("Delete this game?")) {
-      console.log('✅ User confirmed deletion');
-      
       try {
-        const currentState = Store.getState();
-        console.log('📊 Current games in store:', currentState.games.length);
-        
-        const gameToDelete = currentState.games.find(g => g.id === editingGameId);
-        console.log('📋 Game to delete:', gameToDelete);
-        
-        if (!gameToDelete) {
-          console.error('❌ Game not found in store');
-          alert('Error: Game not found');
-          return;
-        }
+        const gameToDelete = Store.getState().games.find(g => g.id === editingGameId);
         
         // Delete calendar event if it exists
         if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected() && gameToDelete?.calendarEventId) {
-          console.log('📅 Deleting calendar event:', gameToDelete.calendarEventId);
           await Calendar.deleteGameEvent(gameToDelete.calendarEventId);
-          console.log('✅ Calendar event deleted');
-        } else {
-          console.log('⚠️ No calendar event to delete or Calendar not connected');
         }
         
-        console.log('🗑️ Deleting game from store...');
         Store.deleteGame(editingGameId);
-        
-        const stateAfterDelete = Store.getState();
-        console.log('📊 Games in store after deletion:', stateAfterDelete.games.length);
-        
-        const stillExists = stateAfterDelete.games.find(g => g.id === editingGameId);
-        if (stillExists) {
-          console.error('❌ Game still exists after deletion attempt');
-          alert('Error: Failed to delete game');
-          return;
-        }
-        
-        console.log('✅ Game deleted from store');
-        
         editingGameId = null;
-        
-        console.log('🔄 Refreshing UI...');
         renderGamesTable();
         hideGameForm();
         renderDashboard(); // Refresh dashboard after deletion
         
-        // Trigger data sync
+        // Trigger data sync if available
         if (typeof DataService !== 'undefined' && DataService.autoSync) {
-          console.log('☁️ Triggering auto-sync...');
           DataService.autoSync();
         }
-        
-        console.log('✅ Game deletion completed successfully');
-        alert('Game deleted successfully!');
       } catch (error) {
-        console.error('❌ Error deleting game:', error);
+        console.error('Error deleting game:', error);
         alert('Error deleting game: ' + error.message);
       }
-    } else {
-      console.log('❌ User cancelled deletion');
     }
   };
 }
 
 function hideGameForm() {
-  console.log('🔒 Hiding game form');
-  const gameFormSection = document.getElementById("gameFormSection");
-  if (gameFormSection) {
-    gameFormSection.classList.add("hidden");
-    console.log('✅ Game form hidden');
-  } else {
-    console.error('❌ gameFormSection not found');
-  }
+  gameFormSection.classList.add("hidden");
   editingGameId = null;
 }
+
+gameForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(gameForm);
+  const payload = {
+    date: formData.get("date"),
+    time: formData.get("time"),
+    league: formData.get("league"),
+    pay: Number(formData.get("pay") || 0),
+    home: formData.get("home"),
+    away: formData.get("away"),
+  };
+  
+  let gameData;
+  if (editingGameId) {
+    const existingGame = Store.getState().games.find(g => g.id === editingGameId);
+    Store.updateGame(editingGameId, payload);
+    gameData = { ...existingGame, ...payload };
+    
+    // Update calendar event if connected and event exists
+    if (Calendar.isConnected() && existingGame.calendarEventId) {
+      await Calendar.updateGameEvent(gameData, existingGame.calendarEventId);
+    }
+  } else {
+    gameData = Store.addGame({ ...payload, updated: false, paid: false });
+    
+    // Create calendar event if connected
+    if (Calendar.isConnected()) {
+      const eventId = await Calendar.createGameEvent(gameData);
+      if (eventId) {
+        Store.updateGame(gameData.id, { calendarEventId: eventId });
+      }
+    }
+  }
+  
+  renderGamesTable();
+  renderDashboard(); // Refresh dashboard after game changes
+  renderCalendar(); // Refresh calendar after game changes
+  hideGameForm();
+});
 
 /**
  * MILEAGE
  */
-
-function initializeMileageSection() {
-  const mileageForm = document.getElementById("mileageForm");
-  const mileageGameIdSelect = document.getElementById("mileageGameId");
-  
-  if (mileageForm) {
-    mileageForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const fd = new FormData(mileageForm);
-      const mileageData = {
-        from: fd.get("from"),
-        to: fd.get("to"),
-        roundTrip: fd.get("roundTrip") === "on",
-        miles: Number(fd.get("miles")),
-        rate: Number(fd.get("rate")),
-        total: Number(fd.get("miles")) * Number(fd.get("rate")),
-        date: fd.get("date"),
-        gameId: fd.get("gameId") ? Number(fd.get("gameId")) : null
-      };
-      Store.addMileage(mileageData);
-      mileageForm.reset();
-      renderMileageTable();
-    });
-  }
-  
-  renderMileageGameOptions();
-}
+const mileageForm = document.getElementById("mileageForm");
+const mileageTableBody = document.querySelector("#mileageTable tbody");
+const mileageGameIdSelect = document.getElementById("mileageGameId");
 
 function renderMileageGameOptions() {
-  const mileageGameIdSelect = document.getElementById("mileageGameId");
-  if (!mileageGameIdSelect) return;
-  
   const { games } = Store.getState();
   mileageGameIdSelect.innerHTML = `<option value="">(Optional) Link to game…</option>`;
   [...games].sort((a,b) => a.date.localeCompare(b.date)).forEach(g => {
@@ -588,9 +332,6 @@ function renderMileageGameOptions() {
 }
 
 function renderMileageTable() {
-  const mileageTableBody = document.querySelector("#mileageTable tbody");
-  if (!mileageTableBody) return;
-  
   const { mileage, games } = Store.getState();
   mileageTableBody.innerHTML = "";
   const rows = [...mileage].sort((a,b) => a.date.localeCompare(b.date));
@@ -615,65 +356,28 @@ function renderMileageTable() {
   });
 }
 
+mileageForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const fd = new FormData(mileageForm);
+  const mileageData = {
+    date: fd.get("date"),
+    miles: Number(fd.get("miles")),
+    gameId: fd.get("gameId") ? Number(fd.get("gameId")) : null
+  };
+  Store.addMileage(mileageData);
+  mileageForm.reset();
+  renderMileageTable();
+});
+
 /**
  * EXPENSES
  */
-
-function initializeExpensesSection() {
-  console.log('💰 Initializing expenses section...');
-  
-  const expenseForm = document.getElementById("expenseForm");
-  const exportCSVBtn = document.getElementById("exportCSV");
-  
-  console.log('💰 Expense elements:', {
-    expenseForm: !!expenseForm,
-    exportCSVBtn: !!exportCSVBtn
-  });
-  
-  if (expenseForm) {
-    expenseForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const fd = new FormData(expenseForm);
-      const expenseData = {
-        date: fd.get("date"),
-        description: fd.get("description"),
-        amount: Number(fd.get("amount")),
-        gameId: fd.get("gameId") ? Number(fd.get("gameId")) : null,
-        receipt: fd.get("receipt") || null
-      };
-      Store.addExpense(expenseData);
-      expenseForm.reset();
-      renderExpensesTable();
-    });
-    console.log('✅ Expense form listener set up');
-  }
-  
-  if (exportCSVBtn) {
-    exportCSVBtn.addEventListener("click", () => {
-      const { expenses, games } = Store.getState();
-      let csv = "Date,Description,Amount,Game\n";
-      expenses.forEach(e => {
-        const game = e.gameId ? games.find(g => g.id === e.gameId) : null;
-        csv += `${e.date},"${e.description}",${e.amount},"${game ? `${game.date} ${game.time}` : ""}"\n`;
-      });
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `referee-expenses-${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-    console.log('✅ Export CSV listener set up');
-  }
-  
-  renderExpenseGameOptions();
-}
+const expenseForm = document.getElementById("expenseForm");
+const expensesTableBody = document.querySelector("#expensesTable tbody");
+const expenseGameIdSelect = document.getElementById("expenseGameId");
+const exportCSVBtn = document.getElementById("exportCSV");
 
 function renderExpenseGameOptions() {
-  const expenseGameIdSelect = document.getElementById("expenseGameId");
-  if (!expenseGameIdSelect) return;
-  
   const { games } = Store.getState();
   expenseGameIdSelect.innerHTML = `<option value="">(Optional) Link to game…</option>`;
   [...games].sort((a,b) => a.date.localeCompare(b.date)).forEach(g => {
@@ -684,38 +388,24 @@ function renderExpenseGameOptions() {
   });
 }
 
-function renderExpensesTable() {
-  const expensesTableBody = document.querySelector("#expensesTable tbody");
-  if (!expensesTableBody) return;
+expenseForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const fd = new FormData(expenseForm);
+  const receiptFile = fd.get("receipt");
   
-  const { expenses, games } = Store.getState();
-  expensesTableBody.innerHTML = "";
-  const rows = [...expenses].sort((a,b) => a.date.localeCompare(b.date));
-  rows.forEach(e => {
-    const game = e.gameId ? games.find(g => g.id === e.gameId) : null;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${e.date}</td>
-      <td>${e.description}</td>
-      <td class="right">$${e.amount.toFixed(2)}</td>
-      <td>${game ? `${game.date} ${game.time}` : "-"}</td>
-      <td class="right">
-        ${e.receipt ? '<span class="receipt-indicator">📷</span>' : ''}
-        <button class="btn secondary btn-del-expense" data-id="${e.id}">Delete</button>
-      </td>
-    `;
-    expensesTableBody.appendChild(tr);
-  });
-
-  expensesTableBody.querySelectorAll(".btn-del-expense").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      const id = Number(e.target.dataset.id);
-      Store.deleteExpense(id);
-      renderExpensesTable();
-      renderDashboard();
-    });
-  });
-}
+  // Handle receipt photo if provided
+  let receiptData = null;
+  if (receiptFile && receiptFile.size > 0) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      receiptData = event.target.result;
+      saveExpense(fd, receiptData);
+    };
+    reader.readAsDataURL(receiptFile);
+  } else {
+    saveExpense(fd, null);
+  }
+});
 
 function saveExpense(formData, receiptData) {
   const exp = {
@@ -733,29 +423,77 @@ function saveExpense(formData, receiptData) {
   renderDashboard();
 }
 
-// Mileage CSV export - This should be moved to mileage initialization
-function initializeMileageCSVExport() {
-  const exportMileageCSVBtn = document.getElementById("exportMileageCSV");
-  if (exportMileageCSVBtn) {
-    exportMileageCSVBtn.addEventListener("click", () => {
-      const { mileage, games } = Store.getState();
-      const header = ["id","date","miles","gameId","gameInfo"];
-      const rows = mileage.map(m => {
-        const game = m.gameId ? games.find(g => g.id === m.gameId) : null;
-        const gameInfo = game ? `${game.date} ${game.time} - ${game.away} @ ${game.home}` : "";
-        return [m.id, m.date, m.miles, m.gameId ?? "", `"${gameInfo.replace(/"/g,'""')}"`];
-      });
-      const content = [header.join(","), ...rows.map(r => r.join(","))].join("\n");
-      const blob = new Blob([content], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "mileage.csv";
-      a.click();
-      URL.revokeObjectURL(url);
+function renderExpensesTable() {
+  const { expenses, games } = Store.getState();
+  expensesTableBody.innerHTML = "";
+  const rows = [...expenses].sort((a,b) => a.date.localeCompare(b.date));
+  rows.forEach(e => {
+    const tr = document.createElement("tr");
+    const game = e.gameId ? games.find(g => g.id === e.gameId) : null;
+    const receiptCell = e.receipt 
+      ? `<img src="${e.receipt}" class="receipt-thumbnail" onclick="showReceiptModal('${e.receipt}')" alt="Receipt">`
+      : "-";
+    tr.innerHTML = `
+      <td>${e.date}</td>
+      <td>${e.category}</td>
+      <td>$${e.amount.toFixed(2)}</td>
+      <td>${game ? `${game.date} ${game.time}` : "-"}</td>
+      <td>${e.notes || ""}</td>
+      <td>${receiptCell}</td>
+      <td class="right"><button class="btn secondary btn-del-exp" data-id="${e.id}">Delete</button></td>
+    `;
+    expensesTableBody.appendChild(tr);
+  });
+  expensesTableBody.querySelectorAll(".btn-del-exp").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = Number(e.target.dataset.id);
+      Store.deleteExpense(id);
+      renderExpensesTable();
+      renderDashboard();
     });
-  }
+  });
 }
+
+exportCSVBtn.addEventListener("click", () => {
+  const { expenses } = Store.getState();
+  const header = ["id","date","category","amount","gameId","notes","hasReceipt"];
+  const rows = expenses.map(e => [
+    e.id, 
+    e.date, 
+    e.category, 
+    e.amount, 
+    e.gameId ?? "", 
+    `"${(e.notes||"").replace(/"/g,'""')}"`,
+    e.receipt ? "Yes" : "No"
+  ]);
+  const content = [header.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob([content], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "expenses.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Mileage CSV export
+document.getElementById("exportMileageCSV").addEventListener("click", () => {
+  const { mileage, games } = Store.getState();
+  const header = ["id","date","miles","gameId","gameInfo"];
+  const rows = mileage.map(m => {
+    const game = m.gameId ? games.find(g => g.id === m.gameId) : null;
+    const gameInfo = game ? `${game.date} ${game.time} - ${game.away} @ ${game.home}` : "";
+    return [m.id, m.date, m.miles, m.gameId ?? "", `"${gameInfo.replace(/"/g,'""')}"`];
+  });
+  const content = [header.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob([content], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "mileage.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
 /**
  * REPORTS
@@ -804,165 +542,206 @@ function renderReports() {
 }
 
 /**
+ * CALENDAR
+ */
+function renderCalendar() {
+  console.log('🗓️ renderCalendar() called');
+  
+  // Make sure calendar section is visible
+  const calendarSection = document.getElementById('calendar');
+  if (!calendarSection) {
+    console.error('❌ Calendar section not found!');
+    return;
+  }
+  
+  // Initialize calendar UI if not already done
+  if (!window.calendarUI) {
+    if (typeof CalendarUI !== 'undefined') {
+      console.log('✅ Creating new CalendarUI instance');
+      try {
+        window.calendarUI = new CalendarUI();
+        console.log('✅ CalendarUI created successfully');
+      } catch (error) {
+        console.error('❌ Error creating CalendarUI:', error);
+        return;
+      }
+    } else {
+      console.error('❌ CalendarUI class not found');
+      
+      // Fallback: Show basic calendar message
+      const calendarContainer = document.querySelector('#calendarDays');
+      if (calendarContainer) {
+        calendarContainer.innerHTML = '<div style="padding: 20px; text-align: center;">Calendar is loading... Please refresh the page.</div>';
+      }
+      return;
+    }
+  }
+  
+  // Sync calendar UI with current games data
+  if (window.calendarUI) {
+    try {
+      const { games } = Store.getState();
+      console.log('🎯 Syncing calendar with', games.length, 'games');
+      window.calendarUI.syncWithGames(games);
+      
+      // Also sync with Google Calendar if available
+      if (window.Calendar && window.Calendar.isConnected()) {
+        console.log('📅 Syncing with Google Calendar');
+        window.calendarUI.syncWithGoogleCalendar();
+      }
+      
+      console.log('✅ Calendar sync completed');
+    } catch (error) {
+      console.error('❌ Error syncing calendar:', error);
+    }
+  }
+}
+
+/**
  * SETTINGS
  */
-
-function initializeSettingsSection() {
-  console.log('⚙️ Initializing settings section...');
-  
-  const resetDataBtn = document.getElementById("resetData");
-  
-  if (resetDataBtn) {
-    resetDataBtn.addEventListener("click", async () => {
-      if (confirm("This will delete ALL your games, expenses, and mileage data. This action cannot be undone. Are you sure?")) {
-        // Show loading state
-        const resetBtn = document.getElementById("resetData");
-        const originalText = resetBtn.textContent;
-        resetBtn.textContent = "Clearing...";
-        resetBtn.disabled = true;
-        
-        try {
-          // Check if user is authenticated for cloud sync
-          const user = AuthService?.getCurrentUser();
-          if (user && typeof DataService !== 'undefined') {
-            // Clear both local and cloud data
-            const result = await DataService.clearAllUserData();
-            if (!result.success) {
-              console.error('Error clearing cloud data:', result.error);
-              // Still clear local data even if cloud fails
-              Store.clearAll();
-            }
-          } else {
-            // Just clear local data
-            Store.clearAll();
-          }
-          
-          // Refresh all views
-          renderDashboard();
-          renderGamesTable();
-          renderExpenseGameOptions();
-          renderExpensesTable();
-          renderMileageGameOptions();
-          renderMileageTable();
-          renderReports();
-          showScreen("dashboard");
-          
-          // Show success message
-          if (typeof showToast === 'function') {
-            showToast('All data has been cleared successfully');
-          } else {
-            alert('All data has been cleared successfully');
-          }
-        } catch (error) {
-          console.error('Error clearing data:', error);
-          if (typeof showToast === 'function') {
-            showToast('Error clearing data. Please try again.', 'error');
-          } else {
-            alert('Error clearing data. Please try again.');
-          }
-        } finally {
-          // Restore button
-          resetBtn.textContent = originalText;
-          resetBtn.disabled = false;
+document.getElementById("resetData").addEventListener("click", async () => {
+  if (confirm("This will delete ALL your games, expenses, and mileage data. This action cannot be undone. Are you sure?")) {
+    // Show loading state
+    const resetBtn = document.getElementById("resetData");
+    const originalText = resetBtn.textContent;
+    resetBtn.textContent = "Clearing...";
+    resetBtn.disabled = true;
+    
+    try {
+      // Check if user is authenticated for cloud sync
+      const user = AuthService?.getCurrentUser();
+      if (user && typeof DataService !== 'undefined') {
+        // Clear both local and cloud data
+        const result = await DataService.clearAllUserData();
+        if (!result.success) {
+          console.error('Error clearing cloud data:', result.error);
+          // Still clear local data even if cloud fails
+          Store.clearAll();
         }
+      } else {
+        // Just clear local data
+        Store.clearAll();
       }
-    });
-    console.log('✅ Reset data button listener set up');
+      
+      // Refresh all views
+      renderDashboard();
+      renderGamesTable();
+      renderExpenseGameOptions();
+      renderExpensesTable();
+      renderMileageGameOptions();
+      renderMileageTable();
+      renderReports();
+      showScreen("dashboard");
+      
+      // Show success message
+      if (typeof showToast === 'function') {
+        showToast('All data has been cleared successfully');
+      } else {
+        alert('All data has been cleared successfully');
+      }
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      if (typeof showToast === 'function') {
+        showToast('Error clearing data. Please try again.', 'error');
+      } else {
+        alert('Error clearing data. Please try again.');
+      }
+    } finally {
+      // Restore button
+      resetBtn.textContent = originalText;
+      resetBtn.disabled = false;
+    }
   }
-}
+});
+
+// Calendar Integration Event Listeners
+document.getElementById("connectCalendarBtn").addEventListener("click", async () => {
+  await Calendar.connect();
+});
+
+document.getElementById("disconnectCalendarBtn").addEventListener("click", async () => {
+  await Calendar.disconnect();
+});
+
+document.getElementById("syncCalendarBtn").addEventListener("click", async () => {
+  const syncBtn = document.getElementById("syncCalendarBtn");
+  const originalText = syncBtn.textContent;
+  syncBtn.textContent = "Syncing...";
+  syncBtn.disabled = true;
+  
+  try {
+    await Calendar.syncAllGames();
+  } catch (error) {
+    console.error('Error syncing calendar:', error);
+  } finally {
+    syncBtn.textContent = originalText;
+    syncBtn.disabled = false;
+  }
+});
 
 // Dark Mode Toggle
-function initializeThemeToggle() {
-  console.log('🌙 Initializing theme toggle...');
+const darkModeToggle = document.getElementById("darkModeToggle");
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+// Load saved theme or use system preference
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark.matches);
   
-  const darkModeToggle = document.getElementById("darkModeToggle");
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-  
-  if (!darkModeToggle) return;
-  
-  // Load saved theme or use system preference
-  function loadTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark.matches);
-    
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    darkModeToggle.checked = isDark;
-  }
-  
-  // Save theme preference
-  function saveTheme(isDark) {
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  }
-  
-  // Initialize theme on page load
-  loadTheme();
-  
-  // Handle toggle changes
-  darkModeToggle.addEventListener('change', (e) => {
-    saveTheme(e.target.checked);
-  });
-  
-  // Listen for system theme changes
-  prefersDark.addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      loadTheme();
-    }
-  });
-  
-  console.log('✅ Theme toggle listener set up');
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  darkModeToggle.checked = isDark;
 }
+
+// Save theme preference
+function saveTheme(isDark) {
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+}
+
+// Initialize theme on page load
+loadTheme();
+
+// Handle toggle changes
+darkModeToggle.addEventListener('change', (e) => {
+  saveTheme(e.target.checked);
+});
+
+// Listen for system theme changes
+prefersDark.addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) {
+    loadTheme();
+  }
+});
 
 /**
  * PHOTO UPLOAD FUNCTIONALITY
  */
+const receiptInput = document.getElementById("receiptInput");
+const receiptPreview = document.getElementById("receiptPreview");
+const receiptImage = document.getElementById("receiptImage");
+const removeReceiptBtn = document.getElementById("removeReceipt");
 
-function initializePhotoUpload() {
-  console.log('📷 Initializing photo upload...');
-  
-  const receiptInput = document.getElementById("receiptInput");
-  const receiptPreview = document.getElementById("receiptPreview");
-  const receiptImage = document.getElementById("receiptImage");
-  const removeReceiptBtn = document.getElementById("removeReceipt");
-  
-  console.log('📷 Photo upload elements:', {
-    receiptInput: !!receiptInput,
-    receiptPreview: !!receiptPreview,
-    receiptImage: !!receiptImage,
-    removeReceiptBtn: !!removeReceiptBtn
-  });
-  
-  if (receiptInput) {
-    receiptInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file && receiptImage && receiptPreview) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          receiptImage.src = event.target.result;
-          receiptPreview.classList.remove("hidden");
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    console.log('✅ Receipt input listener set up');
+receiptInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      receiptImage.src = event.target.result;
+      receiptPreview.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
   }
-  
-  if (removeReceiptBtn) {
-    removeReceiptBtn.addEventListener("click", () => {
-      clearReceiptPreview();
-    });
-    console.log('✅ Remove receipt button listener set up');
-  }
-}
+});
+
+removeReceiptBtn.addEventListener("click", () => {
+  clearReceiptPreview();
+});
 
 function clearReceiptPreview() {
-  const receiptInput = document.getElementById("receiptInput");
-  const receiptImage = document.getElementById("receiptImage");
-  const receiptPreview = document.getElementById("receiptPreview");
-  
-  if (receiptInput) receiptInput.value = "";
-  if (receiptImage) receiptImage.src = "";
-  if (receiptPreview) receiptPreview.classList.add("hidden");
+  receiptInput.value = "";
+  receiptImage.src = "";
+  receiptPreview.classList.add("hidden");
 }
 
 function showReceiptModal(receiptSrc) {
@@ -985,17 +764,24 @@ function showReceiptModal(receiptSrc) {
 }
 
 /**
- * Init - Navigation handling
+ * Init - Wait for authentication before showing content
  */
-// Handle hash changes for navigation (only when explicitly set)
-window.addEventListener('hashchange', () => {
-  const hash = window.location.hash.substring(1);
-  // Only navigate if hash exists and corresponds to a valid screen
-  if (hash && document.getElementById(hash)) {
-    showScreen(hash);
-    // Clear the hash after navigation to prevent staying in URL
-    setTimeout(() => {
-      history.replaceState(null, null, window.location.pathname);
-    }, 100);
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for authentication to initialize
+  if (typeof AuthService !== 'undefined') {
+    try {
+      await AuthService.init();
+      // Only show dashboard if user is authenticated
+      if (AuthService.getCurrentUser()) {
+        showScreen("dashboard");
+      }
+    } catch (error) {
+      console.error('Authentication initialization failed:', error);
+      // Fallback to show dashboard anyway
+      showScreen("dashboard");
+    }
+  } else {
+    // AuthService not available, show dashboard anyway
+    showScreen("dashboard");
   }
 });

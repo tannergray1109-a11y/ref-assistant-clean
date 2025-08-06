@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete App Diagnostics</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Complete Application Diagnostics</h1>
+    
+    <div class="test-section">
+        <h3>1. Core JavaScript Objects</h3>
+        <div id="coreObjects"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. DOM Elements Check</h3>
+        <div id="domElements"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Game Management Functions</h3>
+        <div id="gameFunctions"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Event Listeners Status</h3>
+        <div id="eventListeners"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Firebase Configuration</h3>
+        <div id="firebaseStatus"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Test Delete Game Functionality</h3>
+        <button onclick="testDeleteGame()">Test Delete Game</button>
+        <div id="deleteTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>7. Console Errors</h3>
+        <div id="consoleErrors"></div>
+    </div>
+
+    <!-- Include all the app scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="calendar-ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let diagnosticsLog = [];
+        
+        function log(message, type = 'info', section = 'general') {
+            const div = document.getElementById(section);
+            if (div) {
+                div.innerHTML += `<div class="${type}">${message}</div>`;
+            }
+            diagnosticsLog.push({section, type, message, timestamp: new Date()});
+            console.log(`[${section.toUpperCase()}] ${message}`);
+        }
+
+        // Capture console errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            log('❌ Console Error: ' + args.join(' '), 'error', 'consoleErrors');
+            originalError.apply(console, args);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runDiagnostics, 1000);
+        });
+
+        function runDiagnostics() {
+            log('🧪 Starting comprehensive diagnostics...', 'info', 'coreObjects');
+
+            // 1. Core Objects Check
+            checkCoreObjects();
+
+            // 2. DOM Elements Check
+            checkDOMElements();
+
+            // 3. Game Functions Check
+            checkGameFunctions();
+
+            // 4. Event Listeners Check
+            checkEventListeners();
+
+            // 5. Firebase Check
+            checkFirebase();
+
+            log('✅ Diagnostics completed!', 'success', 'coreObjects');
+        }
+
+        function checkCoreObjects() {
+            const objects = [
+                {name: 'Store', check: () => typeof Store !== 'undefined'},
+                {name: 'Store.getState', check: () => typeof Store?.getState === 'function'},
+                {name: 'Store.addGame', check: () => typeof Store?.addGame === 'function'},
+                {name: 'Store.deleteGame', check: () => typeof Store?.deleteGame === 'function'},
+                {name: 'Calendar', check: () => typeof Calendar !== 'undefined'},
+                {name: 'Calendar.isConnected', check: () => typeof Calendar?.isConnected === 'function'},
+                {name: 'editingGameId', check: () => typeof editingGameId !== 'undefined'},
+                {name: 'openGameForm', check: () => typeof openGameForm === 'function'},
+                {name: 'renderGamesTable', check: () => typeof renderGamesTable === 'function'}
+            ];
+
+            objects.forEach(obj => {
+                try {
+                    if (obj.check()) {
+                        log(`✅ ${obj.name} - Available`, 'success', 'coreObjects');
+                    } else {
+                        log(`❌ ${obj.name} - Missing or Invalid`, 'error', 'coreObjects');
+                    }
+                } catch (e) {
+                    log(`❌ ${obj.name} - Error: ${e.message}`, 'error', 'coreObjects');
+                }
+            });
+        }
+
+        function checkDOMElements() {
+            const elements = [
+                'gameForm',
+                'gameFormSection', 
+                'deleteGameBtn',
+                'gamesTable',
+                'btnAddGame'
+            ];
+
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    log(`✅ #${id} - Found`, 'success', 'domElements');
+                } else {
+                    log(`❌ #${id} - Missing`, 'error', 'domElements');
+                }
+            });
+        }
+
+        function checkGameFunctions() {
+            // Test Store functions
+            try {
+                const state = Store.getState();
+                log(`✅ Store.getState() works - ${state.games.length} games found`, 'success', 'gameFunctions');
+            } catch (e) {
+                log(`❌ Store.getState() failed: ${e.message}`, 'error', 'gameFunctions');
+            }
+
+            // Check if openGameForm is accessible
+            try {
+                if (typeof openGameForm === 'function') {
+                    log(`✅ openGameForm function exists`, 'success', 'gameFunctions');
+                } else {
+                    log(`❌ openGameForm function missing`, 'error', 'gameFunctions');
+                }
+            } catch (e) {
+                log(`❌ openGameForm check failed: ${e.message}`, 'error', 'gameFunctions');
+            }
+        }
+
+        function checkEventListeners() {
+            const deleteBtn = document.getElementById('deleteGameBtn');
+            if (deleteBtn) {
+                log(`✅ Delete button found`, 'success', 'eventListeners');
+                
+                // Check if it has click handlers
+                const handlers = getEventListeners ? getEventListeners(deleteBtn) : 'Cannot check (Chrome DevTools only)';
+                log(`📊 Delete button handlers: ${typeof handlers === 'object' ? JSON.stringify(handlers) : handlers}`, 'info', 'eventListeners');
+            } else {
+                log(`❌ Delete button not found`, 'error', 'eventListeners');
+            }
+        }
+
+        function checkFirebase() {
+            try {
+                if (typeof firebase !== 'undefined' || typeof window.firebaseApp !== 'undefined') {
+                    log(`✅ Firebase available`, 'success', 'firebaseStatus');
+                } else {
+                    log(`❌ Firebase not available`, 'error', 'firebaseStatus');
+                }
+            } catch (e) {
+                log(`❌ Firebase check failed: ${e.message}`, 'error', 'firebaseStatus');
+            }
+        }
+
+        function testDeleteGame() {
+            log('🧪 Testing delete game functionality...', 'info', 'deleteTest');
+            
+            try {
+                // First add a test game
+                const testGame = {
+                    date: '2025-08-06',
+                    time: '15:00',
+                    league: 'Diagnostics Test',
+                    home: 'Test Home',
+                    away: 'Test Away',
+                    pay: 25
+                };
+
+                Store.addGame(testGame);
+                const state = Store.getState();
+                const addedGame = state.games[state.games.length - 1];
+                
+                log(`✅ Test game added with ID: ${addedGame.id}`, 'success', 'deleteTest');
+
+                // Test delete function
+                const beforeCount = state.games.length;
+                Store.deleteGame(addedGame.id);
+                const afterState = Store.getState();
+                const afterCount = afterState.games.length;
+
+                if (afterCount === beforeCount - 1) {
+                    log(`✅ Store.deleteGame() works correctly`, 'success', 'deleteTest');
+                } else {
+                    log(`❌ Store.deleteGame() failed - count before: ${beforeCount}, after: ${afterCount}`, 'error', 'deleteTest');
+                }
+
+                // Test UI delete button
+                if (typeof openGameForm === 'function') {
+                    log(`🧪 Testing UI delete button...`, 'info', 'deleteTest');
+                    // This would require a more complex test with DOM manipulation
+                    log(`⚠️ UI delete button test requires manual verification`, 'warning', 'deleteTest');
+                } else {
+                    log(`❌ Cannot test UI - openGameForm not available`, 'error', 'deleteTest');
+                }
+
+            } catch (e) {
+                log(`❌ Delete test failed: ${e.message}`, 'error', 'deleteTest');
+            }
+        }
+
+        // Expose diagnostics data
+        window.getDiagnosticsLog = () => diagnosticsLog;
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Calendar Module Test</h1>
+    
+    <div class="test-section">
+        <h3>Calendar Object Tests</h3>
+        <div id="testResults"></div>
+    </div>
+
+    <script src="js/calendar.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const div = document.getElementById('testResults');
+            div.innerHTML += `<div class="${type}">${message}</div>`;
+            console.log(message);
+        }
+
+        // Wait for DOM to load and calendar to initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                log('🧪 Testing Calendar object...', 'info');
+                
+                // Test 1: Calendar object exists
+                if (typeof Calendar !== 'undefined') {
+                    log('✅ Calendar object exists', 'success');
+                } else {
+                    log('❌ Calendar object not found', 'error');
+                    return;
+                }
+                
+                // Test 2: isConnected method exists
+                if (typeof Calendar.isConnected === 'function') {
+                    log('✅ Calendar.isConnected() method exists', 'success');
+                    const connected = Calendar.isConnected();
+                    log(`📊 Calendar connection status: ${connected}`, 'info');
+                } else {
+                    log('❌ Calendar.isConnected() method missing', 'error');
+                }
+                
+                // Test 3: createGameEvent method exists
+                if (typeof Calendar.createGameEvent === 'function') {
+                    log('✅ Calendar.createGameEvent() method exists', 'success');
+                } else {
+                    log('❌ Calendar.createGameEvent() method missing', 'error');
+                }
+                
+                // Test 4: updateGameEvent method exists
+                if (typeof Calendar.updateGameEvent === 'function') {
+                    log('✅ Calendar.updateGameEvent() method exists', 'success');
+                } else {
+                    log('❌ Calendar.updateGameEvent() method missing', 'error');
+                }
+                
+                // Test 5: deleteGameEvent method exists
+                if (typeof Calendar.deleteGameEvent === 'function') {
+                    log('✅ Calendar.deleteGameEvent() method exists', 'success');
+                } else {
+                    log('❌ Calendar.deleteGameEvent() method missing', 'error');
+                }
+                
+                log('🎉 Calendar module test completed!', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
