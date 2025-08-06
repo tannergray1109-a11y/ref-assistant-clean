@@ -759,3 +759,4 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen("dashboard");
   }, 100);
 });
+// Fixed hash navigation
