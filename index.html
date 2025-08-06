@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="version" content="2025-08-05-HAMBURGER-MENU-v4">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ref Assistant</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="description" content="Professional referee game and expense tracking application">
+    <meta name="description" content="Professional referee game and expense tracking application with calendar integration">
     <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -37,25 +41,35 @@
 </head>
 <body>
     <div class="app">
-        <aside>
+        <!-- Hamburger Menu Button -->
+        <button id="hamburgerBtn" class="hamburger-btn">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <!-- Navigation Overlay -->
+        <div id="navOverlay" class="nav-overlay"></div>
+        
+        <aside id="sidebar" class="sidebar">
             <div class="logo" id="logoButton">
                 <div class="whistle-icon">
                     <svg viewBox="0 0 32 32" fill="currentColor">
                         <!-- Background circle -->
                         <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
                         
-                        <!-- Letter R - Clean, bold design -->
+                        <!-- Whistle body -->
                         <g fill="white">
-                            <!-- R vertical stroke -->
+                            <!-- Main rectangle -->
                             <rect x="8" y="7" width="3" height="18" rx="1"/>
                             
-                            <!-- R top horizontal stroke -->
-                            <rect x="8" y="7" width="10" height="3" rx="1"/>
+                            <!-- Top horizontal bar -->
+                            <rect x="8" y="7" width="11" height="3" rx="1"/>
                             
-                            <!-- R middle horizontal stroke -->
+                            <!-- Middle horizontal bar -->
                             <rect x="8" y="14" width="8" height="3" rx="1"/>
                             
-                            <!-- R top vertical stroke -->
+                            <!-- R top vertical -->
                             <rect x="16" y="7" width="3" height="10" rx="1"/>
                             
                             <!-- R diagonal leg -->
@@ -65,16 +79,27 @@
                 </div>
                 <h1>Ref Assistant</h1>
             </div>
-            <button class="nav-btn active" data-screen="games">Games</button>
-            <button class="nav-btn" data-screen="calendar" onclick="window.location.href='calendar.html'">Calendar</button>
-            <button class="nav-btn" data-screen="mileage">Mileage</button>
-            <button class="nav-btn" data-screen="expenses">Expenses</button>
-            <button class="nav-btn" data-screen="reports">Reports</button>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <button class="nav-btn active" data-screen="dashboard">Dashboard</button>
+                <button class="nav-btn" data-screen="games">Games</button>
+                <button class="nav-btn" data-screen="calendar">Calendar</button>
+            </div>
+            
+            <div class="nav-divider"></div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Tracking</div>
+                <button class="nav-btn" data-screen="mileage">Mileage</button>
+                <button class="nav-btn" data-screen="expenses">Expenses</button>
+                <button class="nav-btn" data-screen="reports">Reports</button>
+            </div>
+            
             <div class="spacer"></div>
+            <div class="nav-divider"></div>
             <button class="nav-btn" data-screen="settings">Settings</button>
-        </aside>
-
-        <main>
+        </aside>        <main>
             <!-- Profile Picture in Top Right -->
             <div id="profilePicture" class="profile-picture hidden">
                 <div class="avatar" id="userAvatar">
@@ -100,163 +125,474 @@
             <!-- DASHBOARD -->
             <section id="dashboard" class="screen">
                 <h2>Dashboard</h2>
-                <div class="cards">
-                    <div class="card">
-                        <div class="muted">Games This Month</div>
-                        <div id="dashGamesThisMonth" style="font-size: 24px; font-weight: 600;">0</div>
+                
+                <!-- Quick Stats Cards -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Games This Month</h3>
+                        <div id="dashGamesThisMonth" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">0</div>
                     </div>
-                    <div class="card">
-                        <div class="muted">Need Availability Update</div>
-                        <div id="dashNeedUpdate" style="font-size: 24px; font-weight: 600;">0</div>
+                    <div class="dashboard-card">
+                        <h3>Need Availability Update</h3>
+                        <div id="dashNeedUpdate" style="font-size: 2rem; font-weight: 700; color: var(--warning-color);">0</div>
                     </div>
-                    <div class="card">
-                        <div class="muted">Unpaid Games</div>
-                        <div id="dashUnpaid" style="font-size: 24px; font-weight: 600;">0</div>
+                    <div class="dashboard-card">
+                        <h3>Unpaid Games</h3>
+                        <div id="dashUnpaid" style="font-size: 2rem; font-weight: 700; color: var(--danger-color);">0</div>
                     </div>
-                    <div class="card">
-                        <div class="muted">YTD Expenses</div>
-                        <div id="dashYTDExpenses" style="font-size: 24px; font-weight: 600;">$0</div>
+                    <div class="dashboard-card">
+                        <h3>YTD Expenses</h3>
+                        <div id="dashYTDExpenses" style="font-size: 2rem; font-weight: 700; color: var(--success-color);">$0</div>
                     </div>
                 </div>
-                <div class="upcoming-section">
-                    <h3>Upcoming (Next 7 Days)</h3>
-                    <div id="upcomingGames" class="upcoming-games-list">
-                        <!-- Upcoming games will be populated here -->
+
+                <!-- Quick Actions -->
+                <div class="dashboard-grid" style="margin-bottom: 2rem;">
+                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('games')">
+                        <h3>📋 Manage Games</h3>
+                        <p>View and manage your referee assignments</p>
                     </div>
-                    <button class="primary-btn" onclick="showScreen('games')">Go to Games</button>
+                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('calendar')">
+                        <h3>📅 Calendar</h3>
+                        <p>View your schedule and availability</p>
+                    </div>
+                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('mileage')">
+                        <h3>🚗 Track Mileage</h3>
+                        <p>Log your travel expenses</p>
+                    </div>
+                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('reports')">
+                        <h3>📊 Reports</h3>
+                        <p>View earnings and expense reports</p>
+                    </div>
+                </div>
+
+                <!-- Upcoming Games Section -->
+                <div class="dashboard-card">
+                    <div class="flex" style="align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Upcoming Games (Next 7 Days)</h3>
+                        <div class="spacer"></div>
+                        <button class="btn btn-small secondary" data-screen="games" onclick="showScreen('games')">View All Games</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="upcomingTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Location</th>
+                                    <th>Pay</th>
+                                    <th>Updated?</th>
+                                    <th>Paid?</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CALENDAR -->
+            <section id="calendar" class="screen hidden">
+                <h2>Calendar</h2>
+                <div class="calendar-controls">
+                    <button id="calendarTodayBtn" class="btn secondary">Today</button>
+                    <button id="calendarPrevBtn" class="btn secondary">‹</button>
+                    <button id="calendarNextBtn" class="btn secondary">›</button>
+                </div>
+                
+                <div class="calendar-header">
+                    <h3 id="calendarMonthYear">August 2025</h3>
+                    <div class="calendar-sync-status">
+                        <span class="calendar-sync-indicator" id="calendarSyncStatus">
+                            📅
+                            <span id="syncStatusText">Calendar ready</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-grid">
+                        <!-- Calendar days will be generated by JavaScript -->
+                        <div class="calendar-day-header">Sun</div>
+                        <div class="calendar-day-header">Mon</div>
+                        <div class="calendar-day-header">Tue</div>
+                        <div class="calendar-day-header">Wed</div>
+                        <div class="calendar-day-header">Thu</div>
+                        <div class="calendar-day-header">Fri</div>
+                        <div class="calendar-day-header">Sat</div>
+                        <!-- Calendar days will be inserted here -->
+                    </div>
                 </div>
             </section>
 
             <!-- GAMES -->
             <section id="games" class="screen hidden">
-                <div class="screen-header">
+                <div class="flex">
                     <h2>Games</h2>
-                    <button class="primary-btn" id="addGameBtn">Add Game</button>
+                    <div class="spacer"></div>
+                    <button id="btnAddGame" class="btn">+ Add Game</button>
                 </div>
-                <div class="games-list" id="gamesList">
-                    <!-- Games will be populated here -->
+
+                <div class="filters">
+                    <select id="filterUpdated">
+                        <option value="all">All (Updated)</option>
+                        <option value="yes">Updated Only</option>
+                        <option value="no">Not Updated</option>
+                    </select>
+                    <select id="filterPaid">
+                        <option value="all">All (Paid)</option>
+                        <option value="yes">Paid Only</option>
+                        <option value="no">Unpaid Only</option>
+                    </select>
+                    <input type="date" id="filterFrom" />
+                    <input type="date" id="filterTo" />
+                    <button id="btnClearFilters" class="btn secondary">Clear</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="gamesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th><th>Time</th><th>League</th><th>Teams</th><th>Pay</th>
+                                <th>Updated</th><th>Paid</th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Add/Edit Game Modal -->
+                <div id="gameFormSection" class="section hidden">
+                    <h3 id="gameFormTitle">Add Game</h3>
+                    <form id="gameForm">
+                        <div class="grid-2">
+                            <div>
+                                <label>Date</label>
+                                <input type="date" name="date" required />
+                            </div>
+                            <div>
+                                <label>Time</label>
+                                <input type="text" name="time" placeholder="7:00 PM" required />
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <label>League</label>
+                                <input type="text" name="league" placeholder="Varsity Boys" />
+                            </div>
+                            <div>
+                                <label>Pay</label>
+                                <input type="number" name="pay" step="0.01" placeholder="100" />
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <label>Home Team</label>
+                                <input type="text" name="home" placeholder="Home" />
+                            </div>
+                            <div>
+                                <label>Away Team</label>
+                                <input type="text" name="away" placeholder="Away" />
+                            </div>
+                        </div>
+
+                        <div class="flex">
+                            <button type="submit" class="btn">Save</button>
+                            <button type="button" id="cancelGameForm" class="btn secondary">Cancel</button>
+                            <div class="spacer"></div>
+                            <button type="button" id="deleteGameBtn" class="btn secondary hidden">Delete</button>
+                        </div>
+                    </form>
                 </div>
             </section>
 
             <!-- MILEAGE -->
             <section id="mileage" class="screen hidden">
-                <div class="screen-header">
+                <div class="flex">
                     <h2>Mileage</h2>
-                    <button class="primary-btn" id="addMileageBtn">Add Mileage</button>
+                    <div class="spacer"></div>
                 </div>
-                <div class="mileage-list" id="mileageList">
-                    <!-- Mileage entries will be populated here -->
+
+                <div class="section">
+                    <h3>Add Mileage</h3>
+                    <form id="mileageForm">
+                        <div class="grid-2">
+                            <div>
+                                <label>Date</label>
+                                <input type="date" name="date" required />
+                            </div>
+                            <div>
+                                <label>Miles Driven</label>
+                                <input type="number" name="miles" step="0.1" required />
+                            </div>
+                        </div>
+                        <div>
+                            <label>Game</label>
+                            <select name="gameId" id="mileageGameId">
+                                <option value="">(Optional) Link to game…</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn">Add Mileage</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h3>All Mileage</h3>
+                    <div class="table-container">
+                        <table id="mileageTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Miles Driven</th>
+                                    <th>Game</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- EXPENSES -->
             <section id="expenses" class="screen hidden">
-                <div class="screen-header">
+                <div class="flex">
                     <h2>Expenses</h2>
-                    <button class="primary-btn" id="addExpenseBtn">Add Expense</button>
+                    <div class="spacer"></div>
                 </div>
-                <div class="expenses-list" id="expensesList">
-                    <!-- Expenses will be populated here -->
+
+                <div class="section">
+                    <h3>Add Expense</h3>
+                    <form id="expenseForm">
+                        <div class="grid-2">
+                            <div>
+                                <label>Date</label>
+                                <input type="date" name="date" required />
+                            </div>
+                            <div>
+                                <label>Game</label>
+                                <select name="gameId" id="expenseGameId">
+                                    <option value="">(Optional) Link to game…</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <label>Category</label>
+                                <select name="category">
+                                    <option value="Meals">Meals</option>
+                                    <option value="Lodging">Lodging</option>
+                                    <option value="Flight">Flight</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Amount</label>
+                                <input type="number" name="amount" step="0.01" placeholder="0.00" required />
+                            </div>
+                        </div>
+                        <div>
+                            <label>Notes</label>
+                            <textarea name="notes" rows="2" placeholder="Optional"></textarea>
+                        </div>
+                        <div>
+                            <label>Receipt Photo</label>
+                            <div class="photo-upload">
+                                <input type="file" name="receipt" id="receiptInput" accept="image/*" capture="environment">
+                                <label for="receiptInput" class="btn secondary photo-btn">
+                                    📷 Take/Upload Receipt Photo
+                                </label>
+                                <div id="receiptPreview" class="receipt-preview hidden">
+                                    <img id="receiptImage" alt="Receipt preview">
+                                    <button type="button" id="removeReceipt" class="btn-remove">×</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn">Add Expense</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h3>All Expenses</h3>
+                    <div class="table-container">
+                        <table id="expensesTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th><th>Category</th><th>Amount</th><th>Game</th><th>Notes</th><th>Receipt</th><th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <!-- REPORTS -->
-            <section id="reports" class="screen hidden">
-                <h2>Reports</h2>
-                <div class="report-cards">
-                    <div class="card">
-                        <h3>Tax Year Summary</h3>
-                        <div id="taxYearSummary">
-                            <!-- Tax year data will be populated here -->
-                        </div>
-                        <button class="secondary-btn" id="exportTaxBtn">Export Tax Report</button>
-                    </div>
-                    <div class="card">
-                        <h3>Monthly Breakdown</h3>
-                        <div id="monthlyBreakdown">
-                            <!-- Monthly data will be populated here -->
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- REPORTS -->
+    <section id="reports" class="screen hidden">
+      <div class="flex">
+        <h2>Reports</h2>
+        <div class="spacer"></div>
+      </div>
+
+      <div class="section">
+        <h3>Year-to-Date Summary</h3>
+        <div class="cards">
+          <div class="card">
+            <div class="muted">Total Income</div>
+            <div id="rptYTDIncome" style="font-size: 24px; font-weight: 600;">$0</div>
+          </div>
+          <div class="card">
+            <div class="muted">Total Expenses</div>
+            <div id="rptYTDExpenses" style="font-size: 24px; font-weight: 600;">$0</div>
+          </div>
+          <div class="card">
+            <div class="muted">Net Income</div>
+            <div id="rptYTDNet" style="font-size: 24px; font-weight: 600;">$0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Expenses by Category</h3>
+        <div class="table-container">
+          <table id="categoryReportTable">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Total Amount</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div style="margin-top: 12px;">
+          <button id="exportCSV" class="btn secondary">Export Expenses CSV</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Mileage Summary</h3>
+        <div class="cards">
+          <div class="card">
+            <div class="muted">Total Miles Driven</div>
+            <div id="rptTotalMiles" style="font-size: 24px; font-weight: 600;">0</div>
+          </div>
+          <div class="card">
+            <div class="muted">Average Miles per Trip</div>
+            <div id="rptAvgMiles" style="font-size: 24px; font-weight: 600;">0</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table id="mileageReportTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Miles</th>
+                <th>Game</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div style="margin-top: 12px;">
+          <button id="exportMileageCSV" class="btn secondary">Export Mileage CSV</button>
+        </div>
+      </div>
+    </section>
 
             <!-- SETTINGS -->
             <section id="settings" class="screen hidden">
                 <h2>Settings</h2>
-                <div class="settings-section">
-                    <h3>Profile</h3>
-                    <div class="form-group">
-                        <label for="displayName">Display Name</label>
-                        <input type="text" id="displayName" placeholder="Enter your name">
+                <div class="section">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <label for="darkModeToggle">Dark Mode</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="darkModeToggle" class="toggle-input">
+                            <label for="darkModeToggle" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="defaultRate">Default Rate (per game)</label>
-                        <input type="number" id="defaultRate" placeholder="0.00" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="mileageRate">Mileage Rate (per mile)</label>
-                        <input type="number" id="mileageRate" placeholder="0.67" step="0.01">
-                    </div>
-                    <button class="primary-btn" id="saveSettingsBtn">Save Settings</button>
                 </div>
-                <div class="settings-section">
-                    <h3>Account</h3>
-                    <button class="secondary-btn" id="signOutBtn">Sign Out</button>
+                <div class="section">
+                    <h3>Profile</h3>
+                    <div class="setting-item">
+                        <div class="profile-info">
+                            <span class="muted">Signed in as:</span>
+                            <span id="settingsUserEmail">user@example.com</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="displayNameInput">Display Name</label>
+                        <div class="name-edit-container">
+                            <input type="text" id="displayNameInput" placeholder="Enter your display name">
+                            <button id="updateNameBtn" class="btn btn-small">Update</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div></div>
+                        <button id="signOutBtn" class="btn btn-small secondary">Sign Out</button>
+                    </div>
+                </div>
+                <div class="section">
+                    <h3>Security</h3>
+                    <div class="setting-item">
+                        <label>Change Password</label>
+                        <button id="changePasswordBtn" class="btn btn-small">Change Password</button>
+                    </div>
+                </div>
+                <div class="section">
+                    <h3>Data</h3>
+                    <button class="btn secondary" id="resetData">Clear All Data</button>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Auth Screen -->
-    <div id="authScreen" class="auth-screen">
-        <div class="auth-container">
-            <div class="auth-header">
-                <div class="whistle-icon">
-                    <svg viewBox="0 0 32 32" fill="currentColor">
-                        <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
-                        <g fill="white">
-                            <rect x="8" y="7" width="3" height="18" rx="1"/>
-                            <rect x="8" y="7" width="10" height="3" rx="1"/>
-                            <rect x="8" y="14" width="8" height="3" rx="1"/>
-                            <rect x="16" y="7" width="3" height="10" rx="1"/>
-                            <path d="M 13 17 L 19 25 L 16 25 L 11 17 Z"/>
-                        </g>
-                    </svg>
-                </div>
-                <h1>Ref Assistant</h1>
-                <p>Professional referee game and expense tracking</p>
+    <!-- Data Sync Status -->
+    <div id="syncStatus" class="sync-status">
+        <span id="syncText">Data synced</span>
+        <div id="syncSpinner" class="spinner hidden"></div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <button type="button" id="closePasswordModal" class="btn-close">&times;</button>
             </div>
-            <div class="auth-buttons">
-                <button id="signInBtn" class="auth-btn primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Sign in with Google
-                </button>
+            <div class="modal-body">
+                <p class="modal-info">A password reset email will be sent to your email address. Please check your inbox and follow the instructions to reset your password.</p>
+                <form id="changePasswordForm">
+                    <div>
+                        <label for="confirmEmail">Confirm your email address:</label>
+                        <input type="email" id="confirmEmail" name="confirmEmail" required readonly>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn">Send Reset Email</button>
+                        <button type="button" id="cancelPasswordChange" class="btn secondary">Cancel</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-spinner"></div>
-        <p>Loading...</p>
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-content">
+            <span id="toastMessage">Message</span>
+        </div>
     </div>
-
-    <!-- Sync Indicator -->
-    <div id="syncIndicator" class="sync-indicator hidden">
-        <span id="syncStatus">Data synced</span>
-    </div>
-
-    <!-- Modals will be dynamically inserted here -->
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         const firebaseConfig = {
@@ -273,16 +609,26 @@
         window.firebaseAuth = getAuth(app);
         window.firebaseDb = getFirestore(app);
     </script>
-
-    <script src="js/firebase-config.js"></script></script>
-    <script src="js/auth.js"></script>
+    
     <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/games.js"></script>
-    <script src="js/mileage.js"></script>
-    <script src="js/expenses.js"></script>
-    <script src="js/reports.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/sw-register.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/mobile.js"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
