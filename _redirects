@@ -1,0 +1,12 @@
+# Redirect rules for Netlify
+# Ensures proper routing for single-page application
+
+# Redirect all traffic to HTTPS
+http://ref-assistant-clean.netlify.app/* https://ref-assistant-clean.netlify.app/:splat 301!
+
+# Handle client-side routing
+/*    /index.html   200
+
+# Cache control for specific files
+/sw.js    /sw.js    200
+  Cache-Control: no-cache, no-store, must-revalidate
