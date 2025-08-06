@@ -128,165 +128,40 @@
                 <button class="close-btn" id="closeAddGameModal">×</button>
             </div>
             <form id="addGameForm" class="modal-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gameDate">Date</label>
-                        <input type="date" id="gameDate" required>
+                <div class="grid-2">
+                    <div>
+                        <label>Date</label>
+                        <input type="date" id="gameDate" name="date" required />
                     </div>
-                    <div class="form-group">
-                        <label for="gameTime">Time</label>
-                        <input type="time" id="gameTime" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="gameVenue">Venue</label>
-                    <input type="text" id="gameVenue" required placeholder="Game location">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="homeTeam">Home Team</label>
-                        <input type="text" id="homeTeam" required placeholder="Home team name">
-                    </div>
-                    <div class="form-group">
-                        <label for="awayTeam">Away Team</label>
-                        <input type="text" id="awayTeam" required placeholder="Away team name">
+                    <div>
+                        <label>Time</label>
+                        <input type="text" id="gameTime" name="time" placeholder="7:00 PM" required />
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gameLevel">Level</label>
-                        <select id="gameLevel" required>
-                            <option value="">Select level</option>
-                            <option value="youth">Youth</option>
-                            <option value="high-school">High School</option>
-                            <option value="college">College</option>
-                            <option value="professional">Professional</option>
-                            <option value="recreational">Recreational</option>
-                        </select>
+                <div class="grid-2">
+                    <div>
+                        <label>League</label>
+                        <input type="text" id="gameLeague" name="league" placeholder="Varsity Boys" />
                     </div>
-                    <div class="form-group">
-                        <label for="gamePosition">Position</label>
-                        <select id="gamePosition" required>
-                            <option value="">Select position</option>
-                            <option value="referee">Referee</option>
-                            <option value="umpire">Umpire</option>
-                            <option value="linesman">Linesman</option>
-                            <option value="field-judge">Field Judge</option>
-                            <option value="back-judge">Back Judge</option>
-                            <option value="side-judge">Side Judge</option>
-                        </select>
+                    <div>
+                        <label>Pay</label>
+                        <input type="number" id="gamePay" name="pay" step="0.01" placeholder="100" />
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gamePay">Pay Amount ($)</label>
-                        <input type="number" id="gamePay" step="0.01" min="0" placeholder="0.00">
+                <div class="grid-2">
+                    <div>
+                        <label>Home Team</label>
+                        <input type="text" id="homeTeam" name="home" placeholder="Home" required />
                     </div>
-                    <div class="form-group">
-                        <label for="gameStatus">Status</label>
-                        <select id="gameStatus" required>
-                            <option value="scheduled">Scheduled</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                    <div>
+                        <label>Away Team</label>
+                        <input type="text" id="awayTeam" name="away" placeholder="Away" required />
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="gameNotes">Notes</label>
-                    <textarea id="gameNotes" rows="3" placeholder="Additional notes about the game"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn secondary" id="cancelAddGame">Cancel</button>
-                    <button type="submit" class="btn primary">Add Game</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Edit Game Modal -->
-    <div id="editGameModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Edit Game</h3>
-                <button class="close-btn" id="closeEditGameModal">×</button>
-            </div>
-            <form id="editGameForm" class="modal-form">
-                <input type="hidden" id="editGameId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editGameDate">Date</label>
-                        <input type="date" id="editGameDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editGameTime">Time</label>
-                        <input type="time" id="editGameTime" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="editGameVenue">Venue</label>
-                    <input type="text" id="editGameVenue" required placeholder="Game location">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editHomeTeam">Home Team</label>
-                        <input type="text" id="editHomeTeam" required placeholder="Home team name">
-                    </div>
-                    <div class="form-group">
-                        <label for="editAwayTeam">Away Team</label>
-                        <input type="text" id="editAwayTeam" required placeholder="Away team name">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editGameLevel">Level</label>
-                        <select id="editGameLevel" required>
-                            <option value="">Select level</option>
-                            <option value="youth">Youth</option>
-                            <option value="high-school">High School</option>
-                            <option value="college">College</option>
-                            <option value="professional">Professional</option>
-                            <option value="recreational">Recreational</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="editGamePosition">Position</label>
-                        <select id="editGamePosition" required>
-                            <option value="">Select position</option>
-                            <option value="referee">Referee</option>
-                            <option value="umpire">Umpire</option>
-                            <option value="linesman">Linesman</option>
-                            <option value="field-judge">Field Judge</option>
-                            <option value="back-judge">Back Judge</option>
-                            <option value="side-judge">Side Judge</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editGamePay">Pay Amount ($)</label>
-                        <input type="number" id="editGamePay" step="0.01" min="0" placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="editGameStatus">Status</label>
-                        <select id="editGameStatus" required>
-                            <option value="scheduled">Scheduled</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="editGameNotes">Notes</label>
-                    <textarea id="editGameNotes" rows="3" placeholder="Additional notes about the game"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn danger" id="deleteGameBtn">Delete Game</button>
-                    <div class="form-actions-right">
-                        <button type="button" class="btn secondary" id="cancelEditGame">Cancel</button>
-                        <button type="submit" class="btn primary">Save Changes</button>
-                    </div>
+                <div class="flex">
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" id="cancelAddGame" class="btn secondary">Cancel</button>
                 </div>
             </form>
         </div>
