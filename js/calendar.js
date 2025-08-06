@@ -1,449 +1,341 @@
-// Calendar Module - Simple UI Calendar for Referee Games
-class CalendarManager {
-    constructor() {
-        this.currentDate = new Date();
-        this.selectedDate = null;
-        this.currentView = 'month';
-        this.games = [];
-        
-        this.initializeEventListeners();
-        this.renderCalendar();
-        this.loadGames();
-    }
+/**
+ * Google Calendar Integration for Ref Assistant
+ */
+const Calendar = (() => {
+  let gapi = null;
+  let isConnected = false;
+  let calendarId = 'primary'; // Default to primary calendar
+  
+  // Google API configuration - Replace with your actual credentials
+  const CLIENT_ID = '282949404666-3l6ho506ee6m7ujj7r12rpimvk1pr4nl.apps.googleusercontent.com';
+  const API_KEY = 'AIzaSyBDfQnLxR_1XvBGDhcmmH1A7d_rzYSz-9g';
+  const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+  const SCOPES = 'https://www.googleapis.com/auth/calendar';
 
-    initializeEventListeners() {
-        // Navigation buttons
-        document.getElementById('prevBtn').addEventListener('click', () => this.navigatePrevious());
-        document.getElementById('nextBtn').addEventListener('click', () => this.navigateNext());
-        document.getElementById('todayBtn').addEventListener('click', () => this.goToToday());
-
-        // View toggle buttons
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.changeView(e.target.dataset.view));
-        });
-
-        // Game details sidebar
-        document.getElementById('closeSidebar').addEventListener('click', () => this.closeGameDetails());
-    }
-
-    navigatePrevious() {
-        if (this.currentView === 'month') {
-            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-        } else if (this.currentView === 'week') {
-            this.currentDate.setDate(this.currentDate.getDate() - 7);
-        } else if (this.currentView === 'day') {
-            this.currentDate.setDate(this.currentDate.getDate() - 1);
-        }
-        this.renderCalendar();
-    }
-
-    navigateNext() {
-        if (this.currentView === 'month') {
-            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-        } else if (this.currentView === 'week') {
-            this.currentDate.setDate(this.currentDate.getDate() + 7);
-        } else if (this.currentView === 'day') {
-            this.currentDate.setDate(this.currentDate.getDate() + 1);
-        }
-        this.renderCalendar();
-    }
-
-    goToToday() {
-        this.currentDate = new Date();
-        this.renderCalendar();
-    }
-
-    changeView(view) {
-        this.currentView = view;
-        
-        // Update active button
-        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[data-view="${view}"]`).classList.add('active');
-        
-        this.renderCalendar();
-    }
-
-    renderCalendar() {
-        this.updateCurrentMonthDisplay();
-        
-        if (this.currentView === 'month') {
-            this.renderMonthView();
-        } else if (this.currentView === 'week') {
-            this.renderWeekView();
-        } else if (this.currentView === 'day') {
-            this.renderDayView();
-        }
-    }
-
-    updateCurrentMonthDisplay() {
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        
-        let displayText = '';
-        if (this.currentView === 'month') {
-            displayText = `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
-        } else if (this.currentView === 'week') {
-            const startOfWeek = this.getStartOfWeek(this.currentDate);
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(endOfWeek.getDate() + 6);
-            
-            if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
-                displayText = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()}-${endOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
-            } else {
-                displayText = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()} - ${monthNames[endOfWeek.getMonth()]} ${endOfWeek.getDate()}, ${startOfWeek.getFullYear()}`;
-            }
-        } else if (this.currentView === 'day') {
-            displayText = `${monthNames[this.currentDate.getMonth()]} ${this.currentDate.getDate()}, ${this.currentDate.getFullYear()}`;
-        }
-        
-        document.getElementById('currentMonth').textContent = displayText;
-    }
-
-    renderMonthView() {
-        const calendarGrid = document.getElementById('calendarGrid');
-        calendarGrid.className = 'calendar-grid month-view';
-        
-        const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
-        const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
-        const startDate = this.getStartOfWeek(firstDay);
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 41); // 6 weeks
-        
-        let html = this.renderCalendarHeader();
-        
-        const today = new Date();
-        const currentDate = new Date(startDate);
-        
-        while (currentDate <= endDate) {
-            const isOtherMonth = currentDate.getMonth() !== this.currentDate.getMonth();
-            const isToday = this.isSameDay(currentDate, today);
-            const isSelected = this.selectedDate && this.isSameDay(currentDate, this.selectedDate);
-            
-            let dayClasses = 'calendar-day';
-            if (isOtherMonth) dayClasses += ' other-month';
-            if (isToday) dayClasses += ' today';
-            if (isSelected) dayClasses += ' selected';
-            
-            const dayGames = this.getGamesForDate(currentDate);
-            
-            html += `
-                <div class="${dayClasses}" data-date="${currentDate.toISOString().split('T')[0]}">
-                    <div class="day-number">${currentDate.getDate()}</div>
-                    <div class="day-events">
-                        ${this.renderDayEvents(dayGames)}
-                    </div>
-                </div>
-            `;
-            
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        
-        calendarGrid.innerHTML = html;
-        this.attachCalendarEventListeners();
-    }
-
-    renderWeekView() {
-        const calendarGrid = document.getElementById('calendarGrid');
-        calendarGrid.className = 'calendar-grid week-view';
-        
-        const startOfWeek = this.getStartOfWeek(this.currentDate);
-        let html = this.renderCalendarHeader();
-        
-        const today = new Date();
-        
-        for (let i = 0; i < 7; i++) {
-            const currentDate = new Date(startOfWeek);
-            currentDate.setDate(currentDate.getDate() + i);
-            
-            const isToday = this.isSameDay(currentDate, today);
-            const isSelected = this.selectedDate && this.isSameDay(currentDate, this.selectedDate);
-            
-            let dayClasses = 'calendar-day';
-            if (isToday) dayClasses += ' today';
-            if (isSelected) dayClasses += ' selected';
-            
-            const dayGames = this.getGamesForDate(currentDate);
-            
-            html += `
-                <div class="${dayClasses}" data-date="${currentDate.toISOString().split('T')[0]}">
-                    <div class="day-number">${currentDate.getDate()}</div>
-                    <div class="day-events">
-                        ${this.renderDayEvents(dayGames)}
-                    </div>
-                </div>
-            `;
-        }
-        
-        calendarGrid.innerHTML = html;
-        this.attachCalendarEventListeners();
-    }
-
-    renderDayView() {
-        const calendarGrid = document.getElementById('calendarGrid');
-        calendarGrid.className = 'calendar-grid day-view';
-        
-        const today = new Date();
-        const isToday = this.isSameDay(this.currentDate, today);
-        const isSelected = this.selectedDate && this.isSameDay(this.currentDate, this.selectedDate);
-        
-        let dayClasses = 'calendar-day';
-        if (isToday) dayClasses += ' today';
-        if (isSelected) dayClasses += ' selected';
-        
-        const dayGames = this.getGamesForDate(this.currentDate);
-        
-        const html = `
-            <div class="${dayClasses}" data-date="${this.currentDate.toISOString().split('T')[0]}">
-                <div class="day-number">${this.currentDate.getDate()}</div>
-                <div class="day-events">
-                    ${this.renderDayEvents(dayGames, true)}
-                </div>
-            </div>
-        `;
-        
-        calendarGrid.innerHTML = html;
-        this.attachCalendarEventListeners();
-    }
-
-    renderCalendarHeader() {
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        return dayNames.map(day => 
-            `<div class="calendar-day-header">${day}</div>`
-        ).join('');
-    }
-
-    renderDayEvents(games, detailed = false) {
-        if (games.length === 0) return '';
-        
-        const maxVisible = detailed ? games.length : 3;
-        const visibleGames = games.slice(0, maxVisible);
-        const hiddenCount = games.length - maxVisible;
-        
-        let html = visibleGames.map(game => {
-            const time = this.formatTime(game.time);
-            const statusClass = game.status || 'scheduled';
-            
-            if (detailed) {
-                return `
-                    <div class="game-event ${statusClass}" data-game-id="${game.id}">
-                        <div class="game-time">${time}</div>
-                        <div class="game-home">${game.home}</div>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="game-event ${statusClass}" data-game-id="${game.id}">
-                        <span class="event-time">${time}</span>
-                        <span class="event-home">${game.home}</span>
-                    </div>
-                `;
-            }
-        }).join('');
-        
-        if (hiddenCount > 0) {
-            html += `<div class="more-events">+${hiddenCount} more</div>`;
-        }
-        
-        return html;
-    }
-
-    attachCalendarEventListeners() {
-        // Day click handlers
-        document.querySelectorAll('.calendar-day').forEach(day => {
-            day.addEventListener('click', (e) => {
-                if (!e.target.closest('.game-event')) {
-                    this.selectDate(new Date(day.dataset.date));
-                }
-            });
-        });
-
-        // Game event click handlers
-        document.querySelectorAll('.game-event').forEach(event => {
-            event.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showGameDetails(event.dataset.gameId);
-            });
-        });
-    }
-
-    selectDate(date) {
-        this.selectedDate = date;
-        this.renderCalendar();
-    }
-
-    getStartOfWeek(date) {
-        const startOfWeek = new Date(date);
-        const day = startOfWeek.getDay();
-        const diff = startOfWeek.getDate() - day;
-        startOfWeek.setDate(diff);
-        return startOfWeek;
-    }
-
-    isSameDay(date1, date2) {
-        return date1.getDate() === date2.getDate() &&
-               date1.getMonth() === date2.getMonth() &&
-               date1.getFullYear() === date2.getFullYear();
-    }
-
-    getGamesForDate(date) {
-        return this.games.filter(game => {
-            const gameDate = new Date(game.date);
-            return this.isSameDay(gameDate, date);
-        }).sort((a, b) => a.time.localeCompare(b.time));
-    }
-
-    formatTime(timeString) {
-        // Handle both "HH:MM" and "H:MM AM/PM" formats
-        if (timeString.includes('AM') || timeString.includes('PM')) {
-            return timeString;
-        }
-        
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minutes} ${ampm}`;
-    }
-
-    // Game Management
-    async loadGames() {
+  /**
+   * Initialize Google Calendar API
+   */
+  async function init() {
+    try {
+      console.log('🔧 Initializing Google Calendar API...');
+      console.log('🌐 Current domain:', window.location.origin);
+      
+      // Load Google API
+      if (!window.gapi) {
+        console.log('📥 Loading Google API...');
+        await loadGoogleAPI();
+      }
+      
+      gapi = window.gapi;
+      
+      await gapi.load('client:auth2', async () => {
         try {
-            this.games = await window.store.getGames();
-            this.renderCalendar();
-        } catch (error) {
-            console.error('Error loading games:', error);
-            this.showNotification('Error loading games.', 'error');
+          console.log('🔑 Initializing with credentials...');
+          await gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: [DISCOVERY_DOC],
+            scope: SCOPES
+          });
+          
+          console.log('✅ Google API initialized successfully');
+        
+          // Check if user is already signed in
+          const authInstance = gapi.auth2.getAuthInstance();
+          isConnected = authInstance.isSignedIn.get();
+          
+          console.log('🔐 Auth status:', isConnected ? 'Connected' : 'Not connected');
+          updateConnectionStatus();
+        } catch (initError) {
+          console.error('❌ Google API initialization failed:', initError);
+          if (initError.error === 'idpiframe_initialization_failed') {
+            console.error('🚫 Domain not authorized. Check Google Cloud Console credentials.');
+          }
+          throw initError;
         }
+      });
+    } catch (error) {
+      console.error('Failed to initialize Google Calendar API:', error);
+      showToast('Failed to initialize Google Calendar', 'error');
+    }
+  }
+
+  /**
+   * Load Google API script dynamically
+   */
+  function loadGoogleAPI() {
+    return new Promise((resolve, reject) => {
+      if (window.gapi) {
+        resolve();
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * Connect to Google Calendar
+   */
+  async function connect() {
+    try {
+      if (!gapi) {
+        await init();
+      }
+      
+      const authInstance = gapi.auth2.getAuthInstance();
+      await authInstance.signIn();
+      isConnected = true;
+      updateConnectionStatus();
+      showToast('Successfully connected to Google Calendar!', 'success');
+      
+      // Sync existing games after connection
+      await syncAllGames();
+    } catch (error) {
+      console.error('Failed to connect to Google Calendar:', error);
+      showToast('Failed to connect to Google Calendar', 'error');
+    }
+  }
+
+  /**
+   * Disconnect from Google Calendar
+   */
+  async function disconnect() {
+    try {
+      if (gapi && isConnected) {
+        const authInstance = gapi.auth2.getAuthInstance();
+        await authInstance.signOut();
+      }
+      isConnected = false;
+      updateConnectionStatus();
+      showToast('Disconnected from Google Calendar', 'info');
+    } catch (error) {
+      console.error('Failed to disconnect from Google Calendar:', error);
+    }
+  }
+
+  /**
+   * Create a calendar event for a game
+   */
+  async function createGameEvent(game) {
+    if (!isConnected || !gapi) {
+      return null;
     }
 
-    showGameDetails(gameId) {
-        const game = this.games.find(g => g.id === gameId);
-        if (!game) return;
+    try {
+      const startDateTime = new Date(`${game.date}T${game.time || '12:00'}`);
+      const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
 
-        const sidebar = document.getElementById('gameDetailsSidebar');
-        const content = document.getElementById('gameDetailsContent');
-        
-        content.innerHTML = `
-            <div class="game-detail-item">
-                <div class="game-detail-label">Date & Time</div>
-                <div class="game-detail-value">${this.formatDate(game.date)} at ${this.formatTime(game.time)}</div>
-            </div>
-            <div class="game-detail-item">
-                <div class="game-detail-label">Teams</div>
-                <div class="game-detail-value">${game.home} vs ${game.away}</div>
-            </div>
-            ${game.league ? `
-                <div class="game-detail-item">
-                    <div class="game-detail-label">League</div>
-                    <div class="game-detail-value">${game.league}</div>
-                </div>
-            ` : ''}
-            <div class="game-detail-item">
-                <div class="game-detail-label">Pay</div>
-                <div class="game-detail-value">$${game.pay?.toFixed(2) || '0.00'}</div>
-            </div>
-            <div class="game-detail-actions">
-                <button class="btn secondary" onclick="calendar.closeGameDetails()">Close</button>
-            </div>
-        `;
-        
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('visible');
+      const event = {
+        summary: `Referee: ${game.home || 'Game'} ${game.away ? `vs ${game.away}` : ''}`,
+        location: game.location || '',
+        description: `Referee Assignment\n\nTeams: ${game.home || 'Home'} vs ${game.away || 'Away'}\nLevel: ${game.level || 'N/A'}\nPay: $${Number(game.pay || 0).toFixed(2)}\n\nCreated by Ref Assistant`,
+        start: {
+          dateTime: startDateTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        end: {
+          dateTime: endDateTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: 'email', minutes: 24 * 60 }, // 24 hours before
+            { method: 'popup', minutes: 60 } // 1 hour before
+          ]
+        }
+      };
+
+      const response = await gapi.client.calendar.events.insert({
+        calendarId: calendarId,
+        resource: event
+      });
+
+      return response.result.id;
+    } catch (error) {
+      console.error('Failed to create calendar event:', error);
+      showToast('Failed to create calendar event', 'error');
+      return null;
+    }
+  }
+
+  /**
+   * Update a calendar event
+   */
+  async function updateGameEvent(game, eventId) {
+    if (!isConnected || !gapi || !eventId) {
+      return false;
     }
 
-    closeGameDetails() {
-        const sidebar = document.getElementById('gameDetailsSidebar');
-        sidebar.classList.remove('visible');
-        setTimeout(() => {
-            sidebar.classList.add('hidden');
-        }, 300);
+    try {
+      const startDateTime = new Date(`${game.date}T${game.time || '12:00'}`);
+      const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60 * 1000);
+
+      const event = {
+        summary: `Referee: ${game.home || 'Game'} ${game.away ? `vs ${game.away}` : ''}`,
+        location: game.location || '',
+        description: `Referee Assignment\n\nTeams: ${game.home || 'Home'} vs ${game.away || 'Away'}\nLevel: ${game.level || 'N/A'}\nPay: $${Number(game.pay || 0).toFixed(2)}\n\nUpdated by Ref Assistant`,
+        start: {
+          dateTime: startDateTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        end: {
+          dateTime: endDateTime.toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+      };
+
+      await gapi.client.calendar.events.update({
+        calendarId: calendarId,
+        eventId: eventId,
+        resource: event
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to update calendar event:', error);
+      showToast('Failed to update calendar event', 'error');
+      return false;
+    }
+  }
+
+  /**
+   * Delete a calendar event
+   */
+  async function deleteGameEvent(eventId) {
+    if (!isConnected || !gapi || !eventId) {
+      return false;
     }
 
-    formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+    try {
+      await gapi.client.calendar.events.delete({
+        calendarId: calendarId,
+        eventId: eventId
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to delete calendar event:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Sync all existing games to calendar
+   */
+  async function syncAllGames() {
+    if (!isConnected) {
+      return;
     }
 
-    showNotification(message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        // Add to DOM
-        document.body.appendChild(notification);
-        
-        // Show notification
-        setTimeout(() => notification.classList.add('show'), 100);
-        
-        // Hide and remove notification
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
+    const { games } = Store.getState();
+    let synced = 0;
+    
+    for (const game of games) {
+      if (!game.calendarEventId) {
+        const eventId = await createGameEvent(game);
+        if (eventId) {
+          Store.updateGame(game.id, { calendarEventId: eventId });
+          synced++;
+        }
+      }
     }
-}
+    
+    if (synced > 0) {
+      showToast(`Synced ${synced} games to Google Calendar`, 'success');
+    }
+  }
 
-// Initialize calendar when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Wait for auth and store to be available
-    if (window.authService && window.store) {
-        window.calendar = new CalendarManager();
+  /**
+   * Get upcoming calendar events
+   */
+  async function getUpcomingEvents(maxResults = 10) {
+    if (!isConnected || !gapi) {
+      return [];
+    }
+
+    try {
+      const response = await gapi.client.calendar.events.list({
+        calendarId: calendarId,
+        timeMin: new Date().toISOString(),
+        maxResults: maxResults,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+
+      return response.result.items || [];
+    } catch (error) {
+      console.error('Failed to get calendar events:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Update connection status in UI
+   */
+  function updateConnectionStatus() {
+    const statusEl = document.getElementById('calendarStatus');
+    const connectBtn = document.getElementById('connectCalendarBtn');
+    const disconnectBtn = document.getElementById('disconnectCalendarBtn');
+    const syncBtn = document.getElementById('syncCalendarBtn');
+    
+    if (statusEl) {
+      statusEl.textContent = isConnected ? 'Connected' : 'Not Connected';
+      statusEl.className = `calendar-status ${isConnected ? 'connected' : 'disconnected'}`;
+    }
+    
+    if (connectBtn) connectBtn.style.display = isConnected ? 'none' : 'inline-block';
+    if (disconnectBtn) disconnectBtn.style.display = isConnected ? 'inline-block' : 'none';
+    if (syncBtn) syncBtn.style.display = isConnected ? 'inline-block' : 'none';
+  }
+
+  /**
+   * Toast notification helper
+   */
+  function showToast(message, type = 'info') {
+    // Use existing toast system if available, otherwise fallback to alert
+    if (window.showToast) {
+      window.showToast(message, type);
+    } else if (typeof AuthService !== 'undefined' && AuthService.showToast) {
+      AuthService.showToast(message, type);
     } else {
-        // Retry after a short delay
+      // Fallback: try to find the toast element and show it
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      if (toast && toastMessage) {
+        toastMessage.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.classList.remove('hidden');
         setTimeout(() => {
-            window.calendar = new CalendarManager();
-        }, 500);
+          toast.classList.add('hidden');
+        }, 3000);
+      } else {
+        console.log(`Calendar: ${message}`);
+        alert(message);
+      }
     }
-});
+  }
 
-// Add notification styles if not already present
-if (!document.querySelector('style[data-notifications]')) {
-    const style = document.createElement('style');
-    style.setAttribute('data-notifications', 'true');
-    style.textContent = `
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: 10000;
-            max-width: 300px;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            background: #10b981;
-        }
-        
-        .notification.error {
-            background: #ef4444;
-        }
-        
-        .notification.info {
-            background: #3b82f6;
-        }
-        
-        .notification.warning {
-            background: #f59e0b;
-        }
-    `;
-    document.head.appendChild(style);
-}
+  // Public API
+  return {
+    init,
+    connect,
+    disconnect,
+    createGameEvent,
+    updateGameEvent,
+    deleteGameEvent,
+    syncAllGames,
+    getUpcomingEvents,
+    isConnected: () => isConnected,
+    updateConnectionStatus
+  };
+})();
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  Calendar.init();
+});
