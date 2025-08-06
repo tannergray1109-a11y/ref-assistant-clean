@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Basic Test</title>
+</head>
+<body>
+    <h1>Ultimate Basic Button Test</h1>
+    
+    <button id="test1" onclick="alert('Inline onclick works!')">Test 1: Inline onclick</button><br><br>
+    
+    <button id="test2">Test 2: JavaScript addEventListener</button><br><br>
+    
+    <button id="btnAddGame">Test 3: btnAddGame ID</button><br><br>
+    
+    <div id="log"></div>
+
+    <script>
+        console.log('🚀 Script starting...');
+        
+        function log(message) {
+            console.log(message);
+            document.getElementById('log').innerHTML += '<p>' + message + '</p>';
+        }
+        
+        log('Script loaded');
+        
+        // Test 2: Regular JavaScript
+        document.addEventListener('DOMContentLoaded', () => {
+            log('DOM loaded');
+            
+            const test2 = document.getElementById('test2');
+            log('Test2 button found: ' + !!test2);
+            
+            if (test2) {
+                test2.addEventListener('click', () => {
+                    alert('addEventListener works!');
+                    log('Test2 clicked successfully');
+                });
+                log('Test2 event listener added');
+            }
+            
+            // Test 3: The problematic btnAddGame
+            const btnAddGame = document.getElementById('btnAddGame');
+            log('btnAddGame found: ' + !!btnAddGame);
+            
+            if (btnAddGame) {
+                btnAddGame.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('btnAddGame works!');
+                    log('btnAddGame clicked successfully');
+                });
+                log('btnAddGame event listener added');
+                
+                // Visual indicator
+                btnAddGame.style.background = 'green';
+                btnAddGame.style.color = 'white';
+            } else {
+                log('ERROR: btnAddGame not found!');
+            }
+        });
+        
+        log('Script finished loading');
+    </script>
+</body>
+</html>

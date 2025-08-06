@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ref Assistant - Clean Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Hamburger Menu Button -->
+        <button id="hamburgerBtn" class="hamburger-btn">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <!-- Navigation Overlay -->
+        <div id="navOverlay" class="nav-overlay"></div>
+        
+        <aside id="sidebar" class="sidebar">
+            <div class="logo" id="logoButton">
+                <h1>Ref Assistant</h1>
+            </div>
+            
+            <div class="nav-section">
+                <button class="nav-btn active" data-screen="dashboard">Dashboard</button>
+                <button class="nav-btn" data-screen="games">Games</button>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="screen">
+                <h2>Dashboard</h2>
+                <p>Welcome to Ref Assistant!</p>
+                <button id="btnAddGame" class="btn" style="margin: 20px 0; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px;">+ Add Game (TEST)</button>
+            </section>
+
+            <!-- GAMES -->
+            <section id="games" class="screen hidden">
+                <div class="flex">
+                    <h2>Games</h2>
+                    <div class="spacer"></div>
+                    <button id="btnAddGame" class="btn">+ Add Game</button>
+                </div>
+                <p>Games section content here.</p>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/app-clean.js"></script>
+</body>
+</html>

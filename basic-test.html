@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic HTML Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: white; color: black; }
+        h1 { color: blue; }
+        .spinner { 
+            width: 20px; height: 20px; 
+            border: 2px solid #ccc; 
+            border-top: 2px solid #333; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>Basic HTML Test</h1>
+    <p>If you can see this text, HTML is working.</p>
+    
+    <div>
+        <h2>Spinner Test:</h2>
+        <div class="spinner"></div>
+        <p>You should see a spinning circle above.</p>
+    </div>
+    
+    <button onclick="alert('Button works!')">Test Button</button>
+    
+    <h2>Browser Info:</h2>
+    <p id="userAgent">Loading...</p>
+    
+    <script>
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        console.log('Basic test loaded successfully');
+    </script>
+</body>
+</html>

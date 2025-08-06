@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .diagnostic { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .error { background: #ffe6e6; }
+        .success { background: #e6ffe6; }
+        .warning { background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <h1>Ref Assistant - Site Diagnostic</h1>
+    
+    <div id="results"></div>
+    
+    <h2>Test Buttons</h2>
+    <button onclick="testMainSite()">Test Main Site</button>
+    <button onclick="testElements()">Test Elements</button>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `diagnostic ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function testMainSite() {
+            addResult('Testing main site access...');
+            
+            fetch('/')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ Main site accessible', 'success');
+                        return response.text();
+                    } else {
+                        addResult(`❌ Main site error: ${response.status}`, 'error');
+                    }
+                })
+                .then(html => {
+                    if (html) {
+                        if (html.includes('hamburgerBtn')) {
+                            addResult('✅ Hamburger button found in HTML', 'success');
+                        } else {
+                            addResult('❌ Hamburger button not found in HTML', 'error');
+                        }
+                        
+                        if (html.includes('btnAddGame')) {
+                            addResult('✅ Add Game button found in HTML', 'success');
+                        } else {
+                            addResult('❌ Add Game button not found in HTML', 'error');
+                        }
+                        
+                        if (html.includes('js/app.js')) {
+                            addResult('✅ App.js script tag found', 'success');
+                        } else {
+                            addResult('❌ App.js script tag missing', 'error');
+                        }
+                    }
+                })
+                .catch(err => {
+                    addResult(`❌ Fetch error: ${err.message}`, 'error');
+                });
+        }
+        
+        function testElements() {
+            addResult('Testing if we can access main site elements...');
+            
+            // Try to open main site in iframe and test
+            const iframe = document.createElement('iframe');
+            iframe.src = '/';
+            iframe.style.display = 'none';
+            iframe.onload = () => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    const hamburger = iframeDoc.getElementById('hamburgerBtn');
+                    const addGame = iframeDoc.getElementById('btnAddGame');
+                    
+                    if (hamburger) {
+                        addResult('✅ Hamburger button element accessible', 'success');
+                    } else {
+                        addResult('❌ Hamburger button element not found', 'error');
+                    }
+                    
+                    if (addGame) {
+                        addResult('✅ Add Game button element accessible', 'success');
+                    } else {
+                        addResult('❌ Add Game button element not found', 'error');
+                    }
+                } catch (e) {
+                    addResult(`❌ iframe access error: ${e.message}`, 'error');
+                }
+                document.body.removeChild(iframe);
+            };
+            iframe.onerror = () => {
+                addResult('❌ Could not load main site in iframe', 'error');
+                document.body.removeChild(iframe);
+            };
+            document.body.appendChild(iframe);
+        }
+        
+        // Auto-run basic tests
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('🔍 Starting diagnostic...', 'warning');
+            testMainSite();
+        });
+    </script>
+</body>
+</html>

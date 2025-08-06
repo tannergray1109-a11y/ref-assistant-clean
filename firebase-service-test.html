@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Service Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+        .test-section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Services Test</h1>
+    <p>This page will test if your Firebase services are properly configured.</p>
+    
+    <div id="status-display"></div>
+    
+    <div class="test-section">
+        <h2>🔍 Service Status Tests</h2>
+        <button onclick="testFirebaseInit()">Test Firebase Initialization</button>
+        <button onclick="testAuthService()">Test Authentication Service</button>
+        <button onclick="testFirestoreService()">Test Firestore Service</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Authentication Tests</h2>
+        <div>
+            <input type="email" id="testEmail" placeholder="test@example.com" value="test@example.com">
+            <input type="password" id="testPassword" placeholder="password123" value="password123">
+        </div>
+        <button onclick="testSignUp()">Test Sign Up</button>
+        <button onclick="testSignIn()">Test Sign In</button>
+        <button onclick="testSignOut()">Test Sign Out</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Results</h2>
+        <div id="results"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6UeVbO46lCVvTW0CdFbmvpuu1lfG5bn4",
+            authDomain: "ref-assistant-clean.firebaseapp.com",
+            projectId: "ref-assistant-clean",
+            storageBucket: "ref-assistant-clean.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+        
+        let app, auth, db;
+        
+        function addStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status-display');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            statusDiv.appendChild(div);
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+        
+        function addResult(title, data, success = true) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <h3>${success ? '✅' : '❌'} ${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        // Initialize Firebase
+        try {
+            addStatus('Initializing Firebase...', 'info');
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            window.app = app;
+            window.auth = auth;
+            window.db = db;
+            
+            addStatus('Firebase initialized successfully!', 'success');
+            
+            // Set up auth state listener
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    addStatus(`User signed in: ${user.email}`, 'success');
+                } else {
+                    addStatus('User signed out', 'info');
+                }
+            });
+            
+        } catch (error) {
+            addStatus('Firebase initialization failed: ' + error.message, 'error');
+            console.error('Firebase init error:', error);
+        }
+        
+        // Test functions
+        window.testFirebaseInit = function() {
+            const result = {
+                app: !!app,
+                auth: !!auth,
+                firestore: !!db,
+                projectId: app?.options?.projectId,
+                authDomain: app?.options?.authDomain,
+                apiKey: app?.options?.apiKey ? 'Present' : 'Missing'
+            };
+            
+            const success = result.app && result.auth && result.firestore;
+            addResult('Firebase Initialization', result, success);
+            
+            if (success) {
+                addStatus('✅ All Firebase services initialized', 'success');
+            } else {
+                addStatus('❌ Some Firebase services failed to initialize', 'error');
+            }
+        };
+        
+        window.testAuthService = async function() {
+            try {
+                addStatus('Testing Authentication service...', 'info');
+                
+                const currentUser = auth.currentUser;
+                const result = {
+                    authServiceAvailable: !!auth,
+                    currentUser: currentUser ? {
+                        email: currentUser.email,
+                        uid: currentUser.uid,
+                        emailVerified: currentUser.emailVerified
+                    } : null,
+                    authReady: true
+                };
+                
+                addResult('Authentication Service', result, true);
+                addStatus('✅ Authentication service is working', 'success');
+            } catch (error) {
+                addResult('Authentication Service', { error: error.message, code: error.code }, false);
+                addStatus('❌ Authentication service error: ' + error.message, 'error');
+            }
+        };
+        
+        window.testFirestoreService = async function() {
+            try {
+                addStatus('Testing Firestore service...', 'info');
+                
+                // Try to write a test document
+                const testDocRef = doc(db, 'test', 'service-check');
+                await setDoc(testDocRef, {
+                    timestamp: new Date(),
+                    testMessage: 'Firestore is working!'
+                });
+                
+                // Try to read it back
+                const docSnap = await getDoc(testDocRef);
+                
+                const result = {
+                    firestoreAvailable: !!db,
+                    writeTest: 'success',
+                    readTest: docSnap.exists() ? 'success' : 'failed',
+                    testData: docSnap.exists() ? docSnap.data() : null
+                };
+                
+                addResult('Firestore Service', result, true);
+                addStatus('✅ Firestore service is working', 'success');
+            } catch (error) {
+                addResult('Firestore Service', { 
+                    error: error.message, 
+                    code: error.code,
+                    details: 'This usually means Firestore database is not created or rules are too restrictive'
+                }, false);
+                addStatus('❌ Firestore service error: ' + error.message, 'error');
+            }
+        };
+        
+        window.testSignUp = async function() {
+            try {
+                const email = document.getElementById('testEmail').value;
+                const password = document.getElementById('testPassword').value;
+                
+                addStatus(`Attempting to create account for: ${email}`, 'info');
+                
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                const result = {
+                    success: true,
+                    userEmail: userCredential.user.email,
+                    userUid: userCredential.user.uid,
+                    emailVerified: userCredential.user.emailVerified
+                };
+                
+                addResult('Sign Up Test', result, true);
+                addStatus('✅ Sign up successful!', 'success');
+                
+            } catch (error) {
+                const result = { 
+                    success: false,
+                    error: error.message,
+                    errorCode: error.code,
+                    possibleCause: error.code === 'auth/operation-not-allowed' ? 
+                        'Email/Password authentication is not enabled in Firebase Console' :
+                        error.code === 'auth/email-already-in-use' ?
+                        'Account already exists - try signing in instead' :
+                        'Unknown error'
+                };
+                
+                addResult('Sign Up Test', result, false);
+                addStatus('❌ Sign up failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testSignIn = async function() {
+            try {
+                const email = document.getElementById('testEmail').value;
+                const password = document.getElementById('testPassword').value;
+                
+                addStatus(`Attempting to sign in: ${email}`, 'info');
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                
+                const result = {
+                    success: true,
+                    userEmail: userCredential.user.email,
+                    userUid: userCredential.user.uid,
+                    lastSignInTime: userCredential.user.metadata.lastSignInTime
+                };
+                
+                addResult('Sign In Test', result, true);
+                addStatus('✅ Sign in successful!', 'success');
+                
+            } catch (error) {
+                const result = { 
+                    success: false,
+                    error: error.message,
+                    errorCode: error.code,
+                    possibleCause: error.code === 'auth/user-not-found' ? 
+                        'Account does not exist - try signing up first' :
+                        error.code === 'auth/wrong-password' ?
+                        'Incorrect password' :
+                        error.code === 'auth/operation-not-allowed' ?
+                        'Email/Password authentication is not enabled in Firebase Console' :
+                        'Unknown error'
+                };
+                
+                addResult('Sign In Test', result, false);
+                addStatus('❌ Sign in failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testSignOut = async function() {
+            try {
+                if (!auth.currentUser) {
+                    addStatus('No user currently signed in', 'warning');
+                    return;
+                }
+                
+                addStatus('Signing out current user...', 'info');
+                await signOut(auth);
+                
+                addResult('Sign Out Test', { success: true }, true);
+                addStatus('✅ Sign out successful!', 'success');
+                
+            } catch (error) {
+                addResult('Sign Out Test', { 
+                    success: false,
+                    error: error.message,
+                    errorCode: error.code
+                }, false);
+                addStatus('❌ Sign out failed: ' + error.message, 'error');
+            }
+        };
+        
+        // Auto-run basic tests when page loads
+        setTimeout(() => {
+            testFirebaseInit();
+        }, 1000);
+        
+    </script>
+</body>
+</html>

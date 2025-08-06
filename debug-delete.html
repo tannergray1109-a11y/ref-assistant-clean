@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Delete Function</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { margin: 5px; padding: 8px 15px; }
+        .log { background: #f5f5f5; padding: 10px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Debug Delete Function</h1>
+    
+    <div class="debug-section">
+        <h3>Test Instructions</h3>
+        <p>1. Open your main app in another tab</p>
+        <p>2. Add a game or make sure you have at least one game</p>
+        <p>3. Click "Edit" on a game to open the form</p>
+        <p>4. Click the "Delete" button</p>
+        <p>5. Check the console for detailed logging</p>
+        <p>6. Return here to run direct tests</p>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Direct Test Store Functions</h3>
+        <button onclick="testStoreDirectly()">Test Store Delete Directly</button>
+        <button onclick="logCurrentGames()">Log Current Games</button>
+        <button onclick="addTestGame()">Add Test Game</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>Test Log</h3>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+
+        function logCurrentGames() {
+            const state = Store.getState();
+            log(`Current games count: ${state.games.length}`);
+            state.games.forEach(game => {
+                log(`Game ID ${game.id}: ${game.date} ${game.time} - ${game.home} vs ${game.away}`);
+            });
+        }
+
+        function addTestGame() {
+            const testGame = {
+                date: '2025-01-28',
+                time: '15:00',
+                league: 'Debug League',
+                home: 'Debug Home',
+                away: 'Debug Away',
+                pay: 40
+            };
+            
+            Store.addGame(testGame);
+            log('Added test game');
+            logCurrentGames();
+        }
+
+        function testStoreDirectly() {
+            const state = Store.getState();
+            if (state.games.length === 0) {
+                log('No games to delete. Adding test game first...');
+                addTestGame();
+                return;
+            }
+
+            const gameToDelete = state.games[0];
+            log(`Testing delete of game ID ${gameToDelete.id}: ${gameToDelete.date} - ${gameToDelete.home} vs ${gameToDelete.away}`);
+            
+            const countBefore = state.games.length;
+            log(`Games count before delete: ${countBefore}`);
+            
+            Store.deleteGame(gameToDelete.id);
+            
+            const stateAfter = Store.getState();
+            const countAfter = stateAfter.games.length;
+            log(`Games count after delete: ${countAfter}`);
+            
+            if (countAfter === countBefore - 1) {
+                log('✅ Store.deleteGame() working correctly');
+            } else {
+                log('❌ Store.deleteGame() failed');
+            }
+            
+            // Check if the specific game was deleted
+            const stillExists = stateAfter.games.find(g => g.id === gameToDelete.id);
+            if (stillExists) {
+                log('❌ Game still exists after deletion');
+            } else {
+                log('✅ Game successfully removed from store');
+            }
+        }
+
+        // Initialize
+        logCurrentGames();
+    </script>
+</body>
+</html>

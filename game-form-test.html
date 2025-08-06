@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Form Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn.secondary {
+            background: #6b7280;
+        }
+        .hidden {
+            display: none;
+        }
+        form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .spacer {
+            flex: 1;
+        }
+        #output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Form Test</h1>
+    <p>This is a standalone test to verify the game form functionality works properly.</p>
+    
+    <button id="btnAddGame" class="btn">+ Add Game</button>
+    <div id="output"></div>
+    
+    <!-- Game Form -->
+    <div id="gameFormSection" class="hidden">
+        <h3 id="gameFormTitle">Add Game</h3>
+        <form id="gameForm">
+            <div class="grid-2">
+                <div>
+                    <label>Date</label>
+                    <input type="date" name="date" required />
+                </div>
+                <div>
+                    <label>Time</label>
+                    <input type="text" name="time" placeholder="7:00 PM" required />
+                </div>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <label>League</label>
+                    <input type="text" name="league" placeholder="Varsity Boys" />
+                </div>
+                <div>
+                    <label>Pay</label>
+                    <input type="number" name="pay" step="0.01" placeholder="100" />
+                </div>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <label>Home Team</label>
+                    <input type="text" name="home" placeholder="Home" />
+                </div>
+                <div>
+                    <label>Away Team</label>
+                    <input type="text" name="away" placeholder="Away" />
+                </div>
+            </div>
+
+            <div class="flex">
+                <button type="submit" class="btn">Save</button>
+                <button type="button" id="cancelGameForm" class="btn secondary">Cancel</button>
+                <div class="spacer"></div>
+                <button type="button" id="deleteGameBtn" class="btn secondary hidden">Delete</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Simple Store mock for testing
+        const Store = {
+            games: [],
+            lastId: 0,
+            addGame(game) {
+                this.lastId += 1;
+                game.id = this.lastId;
+                this.games.push(game);
+                return game;
+            },
+            getState() {
+                return { games: this.games };
+            }
+        };
+
+        let editingGameId = null;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function openGameForm(id) {
+            log('📝 openGameForm called with id: ' + id);
+            
+            const gameForm = document.getElementById("gameForm");
+            const gameFormTitle = document.getElementById("gameFormTitle");
+            const gameFormSection = document.getElementById("gameFormSection");
+            const deleteGameBtn = document.getElementById("deleteGameBtn");
+            
+            if (!gameForm || !gameFormTitle || !gameFormSection || !deleteGameBtn) {
+                log('❌ Game form elements not found');
+                return;
+            }
+            
+            editingGameId = id;
+            gameForm.reset();
+            deleteGameBtn.classList.toggle("hidden", !id);
+            
+            if (id) {
+                gameFormTitle.textContent = "Edit Game";
+                const g = Store.getState().games.find(x => x.id === id);
+                if (g) {
+                    gameForm.date.value = g.date;
+                    gameForm.time.value = g.time;
+                    gameForm.league.value = g.league || "";
+                    gameForm.pay.value = g.pay || "";
+                    gameForm.home.value = g.home || "";
+                    gameForm.away.value = g.away || "";
+                }
+            } else {
+                gameFormTitle.textContent = "Add Game";
+            }
+            
+            gameFormSection.classList.remove("hidden");
+            log('✅ Game form opened and visible');
+        }
+
+        function hideGameForm() {
+            log('🔒 Hiding game form');
+            const gameFormSection = document.getElementById("gameFormSection");
+            if (gameFormSection) {
+                gameFormSection.classList.add("hidden");
+            }
+            editingGameId = null;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Test page loaded - Setting up event listeners');
+            
+            // Add Game button
+            const btnAddGame = document.getElementById("btnAddGame");
+            if (btnAddGame) {
+                btnAddGame.addEventListener("click", () => {
+                    log('➕ Add Game button clicked');
+                    openGameForm(null);
+                });
+                log('✅ Add Game button listener set up');
+            } else {
+                log('❌ Add Game button not found');
+            }
+            
+            // Cancel button
+            const cancelGameForm = document.getElementById("cancelGameForm");
+            if (cancelGameForm) {
+                cancelGameForm.addEventListener("click", hideGameForm);
+                log('✅ Cancel button listener set up');
+            } else {
+                log('❌ Cancel button not found');
+            }
+            
+            // Game form submit
+            const gameForm = document.getElementById("gameForm");
+            if (gameForm) {
+                gameForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    log('🎮 Game form submitted');
+                    
+                    const formData = new FormData(gameForm);
+                    const payload = {
+                        date: formData.get("date"),
+                        time: formData.get("time"),
+                        league: formData.get("league"),
+                        pay: Number(formData.get("pay") || 0),
+                        home: formData.get("home"),
+                        away: formData.get("away"),
+                    };
+                    
+                    log('📋 Form data: ' + JSON.stringify(payload, null, 2));
+                    
+                    // Validate required fields
+                    if (!payload.date || !payload.time) {
+                        log('❌ Validation failed: Date and time are required');
+                        alert('Please fill in both date and time fields');
+                        return;
+                    }
+                    
+                    try {
+                        let gameData;
+                        if (editingGameId) {
+                            log('✏️ Updating existing game: ' + editingGameId);
+                            // For this test, we'll just simulate an update
+                            gameData = { ...payload, id: editingGameId };
+                        } else {
+                            log('➕ Adding new game');
+                            gameData = Store.addGame({ ...payload, updated: false, paid: false });
+                            log('✅ Game added with ID: ' + gameData.id);
+                        }
+                        
+                        log('📊 Current games in store: ' + Store.games.length);
+                        Store.games.forEach((game, index) => {
+                            log(`  Game ${index + 1}: ${game.date} ${game.time} - ${game.home} vs ${game.away}`);
+                        });
+                        
+                        hideGameForm();
+                        log('✅ Form submission completed successfully');
+                        
+                    } catch (error) {
+                        log('❌ Error saving game: ' + error.message);
+                        alert('Error saving game: ' + error.message);
+                    }
+                });
+                log('✅ Game form submit listener set up');
+            } else {
+                log('❌ Game form not found');
+            }
+            
+            log('✅ All event listeners set up - Test ready!');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Setup Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .loading { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Setup Verification</h1>
+    <p>This page will test your Firebase configuration and help identify any issues.</p>
+    
+    <div id="status"></div>
+    
+    <h2>Tests</h2>
+    <button onclick="testFirebaseConnection()">Test Firebase Connection</button>
+    <button onclick="testAuthentication()">Test Authentication</button>
+    <button onclick="testFirestore()">Test Firestore</button>
+    <button onclick="testSignUp()">Test Sign Up</button>
+    
+    <h2>Results</h2>
+    <div id="results"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6UeVbO46lCVvTW0CdFbmvpuu1lfG5bn4",
+            authDomain: "ref-assistant-clean.firebaseapp.com",
+            projectId: "ref-assistant-clean",
+            storageBucket: "ref-assistant-clean.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+        
+        let app, auth, db;
+        
+        function addStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            statusDiv.appendChild(div);
+        }
+        
+        function addResult(title, result, success = true) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <div class="status ${success ? 'success' : 'error'}">
+                    ${success ? '✅ Success' : '❌ Failed'}
+                </div>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(div);
+        }
+        
+        // Initialize Firebase
+        try {
+            addStatus('Initializing Firebase...');
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            window.firebaseApp = app;
+            window.firebaseAuth = auth;
+            window.firebaseDb = db;
+            
+            addStatus('Firebase initialized successfully', 'success');
+        } catch (error) {
+            addStatus('Firebase initialization failed: ' + error.message, 'error');
+            console.error('Firebase init error:', error);
+        }
+        
+        // Test functions
+        window.testFirebaseConnection = async function() {
+            try {
+                addStatus('Testing Firebase connection...');
+                
+                const result = {
+                    app: !!app,
+                    auth: !!auth,
+                    db: !!db,
+                    projectId: app?.options?.projectId,
+                    authDomain: app?.options?.authDomain
+                };
+                
+                addResult('Firebase Connection', result, true);
+                addStatus('Firebase connection test completed', 'success');
+            } catch (error) {
+                addResult('Firebase Connection', { error: error.message }, false);
+                addStatus('Firebase connection test failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testAuthentication = async function() {
+            try {
+                addStatus('Testing Authentication service...');
+                
+                const result = {
+                    authService: !!auth,
+                    currentUser: auth.currentUser ? {
+                        email: auth.currentUser.email,
+                        uid: auth.currentUser.uid
+                    } : null,
+                    authReady: true
+                };
+                
+                addResult('Authentication Service', result, true);
+                addStatus('Authentication test completed', 'success');
+            } catch (error) {
+                addResult('Authentication Service', { error: error.message }, false);
+                addStatus('Authentication test failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testFirestore = async function() {
+            try {
+                addStatus('Testing Firestore connection...');
+                
+                // Try to write a test document
+                const testDocRef = doc(db, 'test', 'connection-test');
+                await setDoc(testDocRef, {
+                    timestamp: new Date(),
+                    test: true
+                });
+                
+                // Try to read it back
+                const docSnap = await getDoc(testDocRef);
+                
+                const result = {
+                    firestoreConnected: true,
+                    writeTest: 'success',
+                    readTest: docSnap.exists() ? 'success' : 'failed',
+                    data: docSnap.data()
+                };
+                
+                addResult('Firestore Connection', result, true);
+                addStatus('Firestore test completed', 'success');
+            } catch (error) {
+                addResult('Firestore Connection', { error: error.message }, false);
+                addStatus('Firestore test failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testSignUp = async function() {
+            try {
+                addStatus('Testing sign up functionality...');
+                
+                const testEmail = 'test-' + Date.now() + '@example.com';
+                const testPassword = 'testpassword123';
+                
+                const userCredential = await createUserWithEmailAndPassword(auth, testEmail, testPassword);
+                
+                const result = {
+                    signUpSuccess: true,
+                    userEmail: userCredential.user.email,
+                    userUid: userCredential.user.uid
+                };
+                
+                addResult('Sign Up Test', result, true);
+                addStatus('Sign up test completed successfully', 'success');
+                
+                // Clean up - delete the test user
+                await userCredential.user.delete();
+                addStatus('Test user cleaned up', 'success');
+                
+            } catch (error) {
+                const result = { 
+                    error: error.message,
+                    errorCode: error.code
+                };
+                addResult('Sign Up Test', result, false);
+                addStatus('Sign up test failed: ' + error.message, 'error');
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    addStatus('Email already exists - this might be expected', 'warning');
+                }
+            }
+        };
+        
+        // Auto-run basic tests
+        setTimeout(() => {
+            testFirebaseConnection();
+        }, 1000);
+        
+    </script>
+</body>
+</html>

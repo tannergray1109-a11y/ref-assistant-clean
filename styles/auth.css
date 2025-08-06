@@ -134,6 +134,10 @@
   justify-content: center;
 }
 
+.btn-spinner.hidden {
+  display: none !important;
+}
+
 .spinner {
   width: 16px;
   height: 16px;

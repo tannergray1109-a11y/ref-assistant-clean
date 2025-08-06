@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Test</title>
+</head>
+<body>
+    <h1>JavaScript Test</h1>
+    <button id="testBtn">Click Me</button>
+    <p id="output">No click yet</p>
+    
+    <script>
+        console.log('JavaScript is running');
+        alert('JavaScript loaded');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM ready');
+            
+            const btn = document.getElementById('testBtn');
+            const output = document.getElementById('output');
+            
+            btn.addEventListener('click', function() {
+                output.textContent = 'Button clicked!';
+                console.log('Button clicked');
+            });
+        });
+    </script>
+</body>
+</html>

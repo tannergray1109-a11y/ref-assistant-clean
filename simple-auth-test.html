@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Auth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .spinner { 
+            width: 20px; height: 20px; 
+            border: 2px solid #ccc; 
+            border-top: 2px solid #333; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        button { padding: 10px 20px; margin: 10px; }
+        #log { background: #f0f0f0; padding: 10px; margin: 10px 0; height: 300px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>Simple Auth Test</h1>
+    
+    <button id="testSpinner">Test Spinner Toggle</button>
+    <button id="testFirebase">Test Firebase</button>
+    <button id="clearLog">Clear Log</button>
+    
+    <div>
+        <button id="authBtn">
+            <span id="btnText">Sign In</span>
+            <span id="btnSpinner" class="spinner hidden"></span>
+        </button>
+    </div>
+    
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message) {
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<div>[${time}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        addLog('🚀 Page loaded');
+        
+        // Test spinner toggle
+        document.getElementById('testSpinner').addEventListener('click', () => {
+            const text = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+            
+            if (spinner.classList.contains('hidden')) {
+                text.classList.add('hidden');
+                spinner.classList.remove('hidden');
+                addLog('✅ Spinner shown');
+            } else {
+                text.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                addLog('✅ Spinner hidden');
+            }
+        });
+        
+        // Test Firebase loading
+        document.getElementById('testFirebase').addEventListener('click', async () => {
+            addLog('📦 Testing Firebase...');
+            try {
+                addLog('Importing Firebase modules...');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                addLog('✅ Firebase modules imported');
+                
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCa_QlgP14-ZHaZslG1JN0jLtSUYtxlUNE",
+                    authDomain: "sample-firebase-ai-app-a3ded.firebaseapp.com",
+                    projectId: "sample-firebase-ai-app-a3ded",
+                    storageBucket: "sample-firebase-ai-app-a3ded.firebasestorage.app",
+                    messagingSenderId: "551093175028",
+                    appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                addLog('✅ Firebase initialized successfully');
+                addLog(`Auth object: ${!!auth}`);
+            } catch (error) {
+                addLog(`❌ Firebase error: ${error.message}`);
+            }
+        });
+        
+        // Clear log
+        document.getElementById('clearLog').addEventListener('click', () => {
+            log.innerHTML = '';
+            addLog('Log cleared');
+        });
+        
+        // Test if CSS animations work
+        addLog('Testing CSS spinner animation...');
+        setTimeout(() => {
+            const testSpinner = document.createElement('div');
+            testSpinner.className = 'spinner';
+            testSpinner.style.position = 'fixed';
+            testSpinner.style.top = '10px';
+            testSpinner.style.right = '10px';
+            document.body.appendChild(testSpinner);
+            addLog('✅ CSS spinner added to page');
+        }, 1000);
+    </script>
+</body>
+</html>

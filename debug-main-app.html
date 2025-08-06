@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Main App</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Hamburger Menu Button -->
+        <button id="hamburgerBtn" class="hamburger-btn">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        
+        <!-- Navigation Overlay -->
+        <div id="navOverlay" class="nav-overlay"></div>
+        
+        <aside id="sidebar" class="sidebar">
+            <div class="logo" id="logoButton">
+                <h1>Ref Assistant</h1>
+            </div>
+            
+            <div class="nav-section">
+                <button class="nav-btn active" data-screen="dashboard">Dashboard</button>
+                <button class="nav-btn" data-screen="games">Games</button>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="screen">
+                <h2>Dashboard</h2>
+                <div id="debug-log"></div>
+            </section>
+
+            <!-- GAMES -->
+            <section id="games" class="screen hidden">
+                <div class="flex">
+                    <h2>Games</h2>
+                    <div class="spacer"></div>
+                    <button id="btnAddGame" class="btn">+ Add Game</button>
+                </div>
+                <p>Games section content.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Load all the same scripts as the main app -->
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // Debug logging
+        const debugLog = document.getElementById('debug-log');
+        function log(message) {
+            console.log(message);
+            debugLog.innerHTML += '<p style="margin: 5px 0; padding: 5px; background: #f0f0f0;">' + message + '</p>';
+        }
+        
+        // Override console.error to catch errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            log('❌ ERROR: ' + args.join(' '));
+            originalError.apply(console, args);
+        };
+        
+        // Catch uncaught errors
+        window.addEventListener('error', (e) => {
+            log('❌ UNCAUGHT ERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno);
+        });
+        
+        log('🚀 Debug script started');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            log('📱 DOM loaded');
+            
+            // Test if Store exists
+            try {
+                if (typeof Store !== 'undefined') {
+                    log('✅ Store object exists');
+                    const state = Store.getState();
+                    log('✅ Store.getState() works');
+                } else {
+                    log('❌ Store object not found');
+                }
+            } catch (e) {
+                log('❌ Store error: ' + e.message);
+            }
+            
+            // Test basic button functionality
+            const btnAddGame = document.getElementById('btnAddGame');
+            log('Add Game button found: ' + !!btnAddGame);
+            
+            if (btnAddGame) {
+                btnAddGame.addEventListener('click', () => {
+                    log('🎮 Add Game clicked!');
+                    alert('Add Game works in debug version!');
+                });
+                log('✅ Add Game event listener added');
+            }
+            
+            log('🎯 About to load main app.js...');
+        });
+    </script>
+    
+    <!-- Load the main app script last -->
+    <script src="js/app.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                log('🔍 Checking if initializeGamesSection was called...');
+                log('Final check complete');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

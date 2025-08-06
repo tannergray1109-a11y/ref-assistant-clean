@@ -46,14 +46,18 @@ function showScreen(name) {
 
 // Logo click handler for dashboard
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 App DOM Content Loaded - Initializing...');
+  
   // Set up navigation button listeners
   const navBtns = document.querySelectorAll('.nav-btn');
+  console.log('🧭 Found navigation buttons:', navBtns.length);
   
   const logoButton = document.getElementById('logoButton');
   if (logoButton) {
     logoButton.addEventListener('click', () => {
       showScreen('dashboard');
     });
+    console.log('✅ Logo button listener set up');
   }
   
   // Hamburger menu functionality
@@ -75,10 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (hamburgerBtn) {
     hamburgerBtn.addEventListener('click', toggleNav);
+    console.log('✅ Hamburger menu listener set up');
   }
   
   if (navOverlay) {
     navOverlay.addEventListener('click', closeNav);
+    console.log('✅ Navigation overlay listener set up');
   }
   
   // Set up navigation button listeners - navigate and close menu
@@ -88,8 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
       closeNav();
     });
   });
+  console.log('✅ Navigation button listeners set up');
   
   // Initialize all sections
+  console.log('🔧 Initializing app sections...');
   initializeGamesSection();
   initializeMileageSection();
   initializeExpensesSection();
@@ -97,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeSettingsSection();
   initializeThemeToggle();
   initializePhotoUpload();
+  console.log('✅ All app sections initialized');
   
   // Initialize the data and render dashboard
   renderDashboard();
@@ -193,6 +202,8 @@ function renderDashboard() {
 let editingGameId = null;
 
 function initializeGamesSection() {
+  console.log('🎮 Initializing Games Section...');
+  
   const gamesTableBody = document.querySelector("#gamesTable tbody");
   const btnAddGame = document.getElementById("btnAddGame");
   const gameFormSection = document.getElementById("gameFormSection");
@@ -205,10 +216,28 @@ function initializeGamesSection() {
   const filterTo = document.getElementById("filterTo");
   const btnClearFilters = document.getElementById("btnClearFilters");
 
+  console.log('🔍 Games section elements found:', {
+    gamesTableBody: !!gamesTableBody,
+    btnAddGame: !!btnAddGame,
+    gameFormSection: !!gameFormSection,
+    gameForm: !!gameForm,
+    gameFormTitle: !!gameFormTitle,
+    deleteGameBtn: !!deleteGameBtn,
+    filterUpdated: !!filterUpdated,
+    filterPaid: !!filterPaid,
+    filterFrom: !!filterFrom,
+    filterTo: !!filterTo,
+    btnClearFilters: !!btnClearFilters
+  });
+
   if (btnAddGame) {
+    console.log('✅ Add Game button found, setting up click handler');
     btnAddGame.addEventListener("click", () => {
+      console.log('➕ Add Game button clicked');
       openGameForm(null);
     });
+  } else {
+    console.error('❌ Add Game button not found - check if btnAddGame element exists');
   }
   
   const cancelGameForm = document.getElementById("cancelGameForm");
@@ -218,8 +247,11 @@ function initializeGamesSection() {
   
   // Game form submit handler
   if (gameForm) {
+    console.log('✅ Game form found, setting up submit handler');
     gameForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      console.log('🎮 Game form submitted');
+      
       const formData = new FormData(gameForm);
       const payload = {
         date: formData.get("date"),
@@ -230,32 +262,60 @@ function initializeGamesSection() {
         away: formData.get("away"),
       };
       
-      let gameData;
-      if (editingGameId) {
-        const existingGame = Store.getState().games.find(g => g.id === editingGameId);
-        Store.updateGame(editingGameId, payload);
-        gameData = { ...existingGame, ...payload };
-        
-        // Update calendar event if connected and event exists
-        if (Calendar.isConnected() && existingGame.calendarEventId) {
-          await Calendar.updateGameEvent(gameData, existingGame.calendarEventId);
-        }
-      } else {
-        gameData = Store.addGame({ ...payload, updated: false, paid: false });
-        
-        // Create calendar event if connected
-        if (Calendar.isConnected()) {
-          const eventId = await Calendar.createGameEvent(gameData);
-          if (eventId) {
-            Store.updateGame(gameData.id, { calendarEventId: eventId });
-          }
-        }
+      console.log('📋 Game form payload:', payload);
+      
+      // Validate required fields
+      if (!payload.date || !payload.time) {
+        alert('Please fill in both date and time fields');
+        return;
       }
       
-      renderGamesTable();
-      renderDashboard(); // Refresh dashboard after game changes
-      hideGameForm();
+      try {
+        let gameData;
+        if (editingGameId) {
+          console.log('✏️ Updating existing game:', editingGameId);
+          const existingGame = Store.getState().games.find(g => g.id === editingGameId);
+          Store.updateGame(editingGameId, payload);
+          gameData = { ...existingGame, ...payload };
+          
+          // Update calendar event if connected and event exists
+          if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected() && existingGame.calendarEventId) {
+            await Calendar.updateGameEvent(gameData, existingGame.calendarEventId);
+          }
+        } else {
+          console.log('➕ Adding new game');
+          gameData = Store.addGame({ ...payload, updated: false, paid: false });
+          console.log('✅ Game added with ID:', gameData.id);
+          
+          // Create calendar event if connected
+          if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected()) {
+            const eventId = await Calendar.createGameEvent(gameData);
+            if (eventId) {
+              Store.updateGame(gameData.id, { calendarEventId: eventId });
+            }
+          }
+        }
+        
+        console.log('🔄 Refreshing UI...');
+        renderGamesTable();
+        renderDashboard(); // Refresh dashboard after game changes
+        hideGameForm();
+        
+        // Trigger data sync
+        if (typeof DataService !== 'undefined' && DataService.autoSync) {
+          console.log('☁️ Triggering auto-sync...');
+          DataService.autoSync();
+        }
+        
+        console.log('✅ Game form submission completed successfully');
+      } catch (error) {
+        console.error('❌ Error saving game:', error);
+        alert('Error saving game: ' + error.message);
+      }
     });
+    console.log('✅ Game form submit handler set up');
+  } else {
+    console.error('❌ Game form not found - check if gameForm element exists');
   }
   
   if (btnClearFilters) {
@@ -342,13 +402,22 @@ function renderGamesTable() {
 }
 
 function openGameForm(id) {
+  console.log('📝 openGameForm called with id:', id);
+  
   const gameForm = document.getElementById("gameForm");
   const gameFormTitle = document.getElementById("gameFormTitle");
   const gameFormSection = document.getElementById("gameFormSection");
   const deleteGameBtn = document.getElementById("deleteGameBtn");
   
+  console.log('🔍 Game form elements found:', {
+    gameForm: !!gameForm,
+    gameFormTitle: !!gameFormTitle,
+    gameFormSection: !!gameFormSection,
+    deleteGameBtn: !!deleteGameBtn
+  });
+  
   if (!gameForm || !gameFormTitle || !gameFormSection || !deleteGameBtn) {
-    console.error('Game form elements not found');
+    console.error('❌ Game form elements not found');
     return;
   }
   
@@ -356,43 +425,119 @@ function openGameForm(id) {
   editingGameId = id;
   gameForm.reset();
   deleteGameBtn.classList.toggle("hidden", !id);
+  
   if (id) {
+    console.log('✏️ Editing existing game');
     gameFormTitle.textContent = "Edit Game";
     const g = state.games.find(x => x.id === id);
-    gameForm.date.value = g.date;
-    gameForm.time.value = g.time;
-    gameForm.league.value = g.league || "";
-    gameForm.pay.value = g.pay || "";
-    gameForm.home.value = g.home || "";
-    gameForm.away.value = g.away || "";
+    if (g) {
+      gameForm.date.value = g.date;
+      gameForm.time.value = g.time;
+      gameForm.league.value = g.league || "";
+      gameForm.pay.value = g.pay || "";
+      gameForm.home.value = g.home || "";
+      gameForm.away.value = g.away || "";
+      console.log('📋 Form populated with game data:', g);
+    } else {
+      console.error('❌ Game not found with id:', id);
+    }
   } else {
+    console.log('➕ Adding new game');
     gameFormTitle.textContent = "Add Game";
   }
+  
   gameFormSection.classList.remove("hidden");
+  console.log('✅ Game form opened and visible');
   gameForm.scrollIntoView({ behavior: "smooth" });
 
-  deleteGameBtn.onclick = async () => {
+  // Remove any existing event listeners to prevent duplicates
+  deleteGameBtn.onclick = null;
+  
+  deleteGameBtn.onclick = async (event) => {
+    event.preventDefault();
+    console.log('🗑️ Delete game button clicked for ID:', editingGameId);
+    console.log('🔍 Current editing game ID:', editingGameId);
+    console.log('🔍 Delete button element:', deleteGameBtn);
+    
+    if (!editingGameId) {
+      console.error('❌ No game ID to delete');
+      alert('Error: No game selected for deletion');
+      return;
+    }
+    
     if (confirm("Delete this game?")) {
-      const gameToDelete = Store.getState().games.find(g => g.id === editingGameId);
+      console.log('✅ User confirmed deletion');
       
-      // Delete calendar event if it exists
-      if (Calendar.isConnected() && gameToDelete?.calendarEventId) {
-        await Calendar.deleteGameEvent(gameToDelete.calendarEventId);
+      try {
+        const currentState = Store.getState();
+        console.log('📊 Current games in store:', currentState.games.length);
+        
+        const gameToDelete = currentState.games.find(g => g.id === editingGameId);
+        console.log('📋 Game to delete:', gameToDelete);
+        
+        if (!gameToDelete) {
+          console.error('❌ Game not found in store');
+          alert('Error: Game not found');
+          return;
+        }
+        
+        // Delete calendar event if it exists
+        if (typeof Calendar !== 'undefined' && Calendar.isConnected && Calendar.isConnected() && gameToDelete?.calendarEventId) {
+          console.log('📅 Deleting calendar event:', gameToDelete.calendarEventId);
+          await Calendar.deleteGameEvent(gameToDelete.calendarEventId);
+          console.log('✅ Calendar event deleted');
+        } else {
+          console.log('⚠️ No calendar event to delete or Calendar not connected');
+        }
+        
+        console.log('🗑️ Deleting game from store...');
+        Store.deleteGame(editingGameId);
+        
+        const stateAfterDelete = Store.getState();
+        console.log('📊 Games in store after deletion:', stateAfterDelete.games.length);
+        
+        const stillExists = stateAfterDelete.games.find(g => g.id === editingGameId);
+        if (stillExists) {
+          console.error('❌ Game still exists after deletion attempt');
+          alert('Error: Failed to delete game');
+          return;
+        }
+        
+        console.log('✅ Game deleted from store');
+        
+        editingGameId = null;
+        
+        console.log('🔄 Refreshing UI...');
+        renderGamesTable();
+        hideGameForm();
+        renderDashboard(); // Refresh dashboard after deletion
+        
+        // Trigger data sync
+        if (typeof DataService !== 'undefined' && DataService.autoSync) {
+          console.log('☁️ Triggering auto-sync...');
+          DataService.autoSync();
+        }
+        
+        console.log('✅ Game deletion completed successfully');
+        alert('Game deleted successfully!');
+      } catch (error) {
+        console.error('❌ Error deleting game:', error);
+        alert('Error deleting game: ' + error.message);
       }
-      
-      Store.deleteGame(editingGameId);
-      editingGameId = null;
-      renderGamesTable();
-      hideGameForm();
-      renderDashboard(); // Refresh dashboard after deletion
+    } else {
+      console.log('❌ User cancelled deletion');
     }
   };
 }
 
 function hideGameForm() {
+  console.log('🔒 Hiding game form');
   const gameFormSection = document.getElementById("gameFormSection");
   if (gameFormSection) {
     gameFormSection.classList.add("hidden");
+    console.log('✅ Game form hidden');
+  } else {
+    console.error('❌ gameFormSection not found');
   }
   editingGameId = null;
 }

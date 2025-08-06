@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Quick Login Test</h1>
+    
+    <div id="status"></div>
+    
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" placeholder="test@example.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="password123">
+    </div>
+    
+    <button onclick="testSignUp()">Test Sign Up</button>
+    <button onclick="testSignIn()">Test Sign In</button>
+    <button onclick="checkFirebase()">Check Firebase Status</button>
+    
+    <h2>Results:</h2>
+    <div id="results"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6UeVbO46lCVvTW0CdFbmvpuu1lfG5bn4",
+            authDomain: "ref-assistant-clean.firebaseapp.com",
+            projectId: "ref-assistant-clean",
+            storageBucket: "ref-assistant-clean.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+        
+        let app, auth, db;
+        
+        function showStatus(message, type = 'info') {
+            document.getElementById('status').innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function addResult(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<div class="status info">${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            showStatus('✅ Firebase initialized successfully', 'success');
+            
+            window.app = app;
+            window.auth = auth;
+            window.db = db;
+        } catch (error) {
+            showStatus('❌ Firebase initialization failed: ' + error.message, 'error');
+        }
+        
+        window.checkFirebase = function() {
+            addResult('Checking Firebase services...');
+            addResult('App: ' + (app ? '✅ Ready' : '❌ Not initialized'));
+            addResult('Auth: ' + (auth ? '✅ Ready' : '❌ Not initialized'));
+            addResult('Firestore: ' + (db ? '✅ Ready' : '❌ Not initialized'));
+            addResult('Project ID: ' + (app?.options?.projectId || 'Unknown'));
+        };
+        
+        window.testSignUp = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showStatus('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                addResult('Attempting to create user...');
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                addResult('✅ Sign up successful! User: ' + userCredential.user.email);
+                showStatus('Sign up successful!', 'success');
+            } catch (error) {
+                addResult('❌ Sign up failed: ' + error.message);
+                showStatus('Sign up failed: ' + error.message, 'error');
+            }
+        };
+        
+        window.testSignIn = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showStatus('Please enter email and password', 'error');
+                return;
+            }
+            
+            try {
+                addResult('Attempting to sign in...');
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                addResult('✅ Sign in successful! User: ' + userCredential.user.email);
+                showStatus('Sign in successful!', 'success');
+            } catch (error) {
+                addResult('❌ Sign in failed: ' + error.message);
+                showStatus('Sign in failed: ' + error.message, 'error');
+            }
+        };
+    </script>
+</body>
+</html>

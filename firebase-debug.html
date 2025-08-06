@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #output {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase Connection Debug</h1>
+    
+    <div id="status-container"></div>
+    
+    <div>
+        <button onclick="testFirebaseInit()">Test Firebase Initialization</button>
+        <button onclick="testAuth()">Test Authentication Service</button>
+        <button onclick="testFirestore()">Test Firestore Service</button>
+        <button onclick="testCreateUser()">Test Create User</button>
+        <button onclick="testSignIn()">Test Sign In</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, connectAuthEmulator, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, connectFirestoreEmulator, doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6UeVbO46lCVvTW0CdFbmvpuu1lfG5bn4",
+            authDomain: "ref-assistant-clean.firebaseapp.com",
+            projectId: "ref-assistant-clean",
+            storageBucket: "ref-assistant-clean.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+
+        let app, auth, db;
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            
+            const statusContainer = document.getElementById('status-container');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusContainer.appendChild(statusDiv);
+        }
+
+        window.clearOutput = function() {
+            document.getElementById('output').textContent = '';
+            document.getElementById('status-container').innerHTML = '';
+        }
+
+        window.testFirebaseInit = async function() {
+            try {
+                log('Initializing Firebase...');
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                log('Firebase app initialized successfully', 'success');
+                log(`Project ID: ${app.options.projectId}`);
+                log(`Auth Domain: ${app.options.authDomain}`);
+                
+                // Test auth state listener
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        log(`Auth state: User signed in - ${user.email}`, 'success');
+                    } else {
+                        log('Auth state: No user signed in', 'warning');
+                    }
+                });
+                
+                window.app = app;
+                window.auth = auth;
+                window.db = db;
+                
+            } catch (error) {
+                log(`Firebase initialization failed: ${error.message}`, 'error');
+                console.error('Firebase init error:', error);
+            }
+        }
+
+        window.testAuth = async function() {
+            if (!auth) {
+                log('Firebase not initialized. Run "Test Firebase Initialization" first.', 'error');
+                return;
+            }
+            
+            try {
+                log('Testing Authentication service...');
+                
+                // Test if auth is connected
+                const user = auth.currentUser;
+                log(`Current user: ${user ? user.email : 'None'}`);
+                
+                // Test auth connection
+                log('Authentication service is accessible', 'success');
+                
+            } catch (error) {
+                log(`Authentication test failed: ${error.message}`, 'error');
+                console.error('Auth test error:', error);
+            }
+        }
+
+        window.testFirestore = async function() {
+            if (!db) {
+                log('Firebase not initialized. Run "Test Firebase Initialization" first.', 'error');
+                return;
+            }
+            
+            try {
+                log('Testing Firestore service...');
+                
+                // Try to create a test document
+                const testDoc = doc(db, 'test', 'connection-test');
+                await setDoc(testDoc, {
+                    message: 'Connection test',
+                    timestamp: serverTimestamp()
+                });
+                
+                log('Firestore write test successful', 'success');
+                
+                // Try to read the document back
+                const docSnap = await getDoc(testDoc);
+                if (docSnap.exists()) {
+                    log('Firestore read test successful', 'success');
+                    log(`Test data: ${JSON.stringify(docSnap.data())}`);
+                } else {
+                    log('Firestore read test failed: Document not found', 'error');
+                }
+                
+            } catch (error) {
+                log(`Firestore test failed: ${error.message}`, 'error');
+                console.error('Firestore test error:', error);
+                
+                if (error.code === 'permission-denied') {
+                    log('Firestore access denied. Check security rules.', 'error');
+                } else if (error.code === 'unavailable') {
+                    log('Firestore service unavailable. Check if service is enabled.', 'error');
+                }
+            }
+        }
+
+        window.testCreateUser = async function() {
+            if (!auth) {
+                log('Firebase not initialized. Run "Test Firebase Initialization" first.', 'error');
+                return;
+            }
+            
+            const testEmail = 'test' + Date.now() + '@example.com';
+            const testPassword = 'TestPassword123!';
+            
+            try {
+                log(`Creating test user: ${testEmail}`);
+                
+                const userCredential = await createUserWithEmailAndPassword(auth, testEmail, testPassword);
+                const user = userCredential.user;
+                
+                log(`User created successfully: ${user.email}`, 'success');
+                log(`User UID: ${user.uid}`);
+                
+                // Try to create user profile in Firestore
+                if (db) {
+                    const userDoc = doc(db, 'users', user.uid);
+                    await setDoc(userDoc, {
+                        email: user.email,
+                        displayName: 'Test User',
+                        createdAt: serverTimestamp()
+                    });
+                    log('User profile created in Firestore', 'success');
+                }
+                
+            } catch (error) {
+                log(`User creation failed: ${error.message}`, 'error');
+                console.error('User creation error:', error);
+                
+                if (error.code === 'auth/operation-not-allowed') {
+                    log('Email/password authentication not enabled in Firebase Console', 'error');
+                } else if (error.code === 'auth/weak-password') {
+                    log('Password is too weak', 'error');
+                }
+            }
+        }
+
+        window.testSignIn = async function() {
+            if (!auth) {
+                log('Firebase not initialized. Run "Test Firebase Initialization" first.', 'error');
+                return;
+            }
+            
+            const email = prompt('Enter email to test sign in:');
+            const password = prompt('Enter password:');
+            
+            if (!email || !password) {
+                log('Sign in test cancelled', 'warning');
+                return;
+            }
+            
+            try {
+                log(`Attempting to sign in: ${email}`);
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                log(`Sign in successful: ${user.email}`, 'success');
+                log(`User UID: ${user.uid}`);
+                log(`Display Name: ${user.displayName || 'Not set'}`);
+                
+                // Try to read user data from Firestore
+                if (db) {
+                    const userDoc = doc(db, 'users', user.uid);
+                    const docSnap = await getDoc(userDoc);
+                    if (docSnap.exists()) {
+                        log('User profile found in Firestore', 'success');
+                        log(`Profile data: ${JSON.stringify(docSnap.data(), null, 2)}`);
+                    } else {
+                        log('No user profile found in Firestore', 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                log(`Sign in failed: ${error.message}`, 'error');
+                console.error('Sign in error:', error);
+                
+                if (error.code === 'auth/user-not-found') {
+                    log('User not found', 'error');
+                } else if (error.code === 'auth/wrong-password') {
+                    log('Incorrect password', 'error');
+                } else if (error.code === 'auth/invalid-email') {
+                    log('Invalid email format', 'error');
+                }
+            }
+        }
+
+        // Auto-initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Firebase Debug Tool loaded');
+            testFirebaseInit();
+        });
+    </script>
+</body>
+</html>

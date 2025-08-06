@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Ref Assistant</title>
+</head>
+<body>
+    <h1>Basic Test</h1>
+    
+    <!-- Test hamburger button -->
+    <button id="hamburgerBtn">☰ Hamburger Menu</button>
+    
+    <!-- Test Add Game button -->
+    <button id="btnAddGame">Add Game</button>
+    
+    <div id="output"></div>
+
+    <script>
+        console.log('Script loaded');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const addGameBtn = document.getElementById('btnAddGame');
+            const output = document.getElementById('output');
+            
+            console.log('Hamburger button:', hamburgerBtn);
+            console.log('Add Game button:', addGameBtn);
+            
+            if (hamburgerBtn) {
+                hamburgerBtn.addEventListener('click', () => {
+                    console.log('Hamburger clicked!');
+                    output.innerHTML += '<p>Hamburger button works!</p>';
+                });
+            }
+            
+            if (addGameBtn) {
+                addGameBtn.addEventListener('click', () => {
+                    console.log('Add Game clicked!');
+                    output.innerHTML += '<p>Add Game button works!</p>';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

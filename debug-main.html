@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Main App</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <button id="hamburgerBtn">Hamburger Test</button>
+    <button id="btnAddGame">Add Game Test</button>
+    
+    <script>
+        console.log('Loading test script...');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const addGameBtn = document.getElementById('btnAddGame');
+            
+            console.log('Elements found:', {
+                hamburgerBtn: !!hamburgerBtn,
+                addGameBtn: !!addGameBtn
+            });
+            
+            if (hamburgerBtn) {
+                hamburgerBtn.addEventListener('click', () => {
+                    console.log('Hamburger clicked!');
+                    alert('Hamburger works!');
+                });
+                console.log('Hamburger listener added');
+            }
+            
+            if (addGameBtn) {
+                addGameBtn.addEventListener('click', () => {
+                    console.log('Add Game clicked!');
+                    alert('Add Game works!');
+                });
+                console.log('Add Game listener added');
+            }
+        });
+    </script>
+</body>
+</html>

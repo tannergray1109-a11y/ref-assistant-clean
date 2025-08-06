@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sign In - Ref Assistant</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <style>
+        #debug-log {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            max-height: 400px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            z-index: 9999;
+            border: 1px solid #333;
+        }
+        .debug-error { color: #f00; }
+        .debug-warn { color: #ff0; }
+        .debug-success { color: #0f0; }
+    </style>
+</head>
+<body class="auth-page">
+    <div id="debug-log"></div>
+    
+    <div class="auth-page-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <h1>Ref Assistant</h1>
+                </div>
+                <h2 id="authTitle">Debug Sign In</h2>
+            </div>
+            
+            <!-- Error message -->
+            <div id="authError" class="auth-error hidden"></div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email" value="test@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password" value="testpass">
+                </div>
+                <button type="submit" class="btn primary auth-submit">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-spinner hidden">
+                        <div class="spinner"></div>
+                    </span>
+                </button>
+            </form>
+            
+            <div class="auth-divider">
+                <span>Debug Mode</span>
+            </div>
+            <button type="button" id="clearLog" class="btn secondary">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging system
+        const debugLog = document.getElementById('debug-log');
+        let logCount = 0;
+        
+        function log(message, type = 'info') {
+            logCount++;
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'debug-error' : type === 'warn' ? 'debug-warn' : type === 'success' ? 'debug-success' : '';
+            debugLog.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            log(args.join(' '), 'info');
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            log(args.join(' '), 'warn');
+            originalWarn.apply(console, args);
+        };
+        
+        // Catch uncaught errors
+        window.addEventListener('error', (e) => {
+            log(`UNCAUGHT ERROR: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            log(`UNHANDLED PROMISE REJECTION: ${e.reason}`, 'error');
+        });
+        
+        log('🚀 Debug signin page loaded');
+        
+        // Clear log button
+        document.getElementById('clearLog').addEventListener('click', () => {
+            debugLog.innerHTML = '';
+            logCount = 0;
+            log('Debug log cleared');
+        });
+    </script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        log('📦 Loading Firebase...');
+        
+        try {
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+            const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            
+            log('✅ Firebase modules imported');
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyCa_QlgP14-ZHaZslG1JN0jLtSUYtxlUNE",
+                authDomain: "sample-firebase-ai-app-a3ded.firebaseapp.com",
+                projectId: "sample-firebase-ai-app-a3ded",
+                storageBucket: "sample-firebase-ai-app-a3ded.firebasestorage.app",
+                messagingSenderId: "551093175028",
+                appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+            };
+            
+            const app = initializeApp(firebaseConfig);
+            window.firebaseApp = app;
+            window.firebaseAuth = getAuth(app);
+            window.firebaseDb = getFirestore(app);
+            
+            log('✅ Firebase initialized successfully');
+            log(`Auth: ${!!window.firebaseAuth}, DB: ${!!window.firebaseDb}`);
+        } catch (error) {
+            log(`❌ Firebase initialization error: ${error.message}`, 'error');
+        }
+    </script>
+    
+    <script src="js/auth-page.js"></script>
+</body>
+</html>
