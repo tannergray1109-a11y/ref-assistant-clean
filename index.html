@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="version" content="2025-08-05-HAMBURGER-MENU-v4">
+    <meta name="version" content="2025-08-05-HAMBURGER-FIXED-v5">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -125,53 +125,30 @@
             <!-- DASHBOARD -->
             <section id="dashboard" class="screen">
                 <h2>Dashboard</h2>
-                
-                <!-- Quick Stats Cards -->
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3>Games This Month</h3>
-                        <div id="dashGamesThisMonth" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">0</div>
+                <div class="cards">
+                    <div class="card">
+                        <div class="muted">Games This Month</div>
+                        <div id="dashGamesThisMonth" style="font-size: 24px; font-weight: 600;">0</div>
                     </div>
-                    <div class="dashboard-card">
-                        <h3>Need Availability Update</h3>
-                        <div id="dashNeedUpdate" style="font-size: 2rem; font-weight: 700; color: var(--warning-color);">0</div>
+                    <div class="card">
+                        <div class="muted">Need Availability Update</div>
+                        <div id="dashNeedUpdate" style="font-size: 24px; font-weight: 600;">0</div>
                     </div>
-                    <div class="dashboard-card">
-                        <h3>Unpaid Games</h3>
-                        <div id="dashUnpaid" style="font-size: 2rem; font-weight: 700; color: var(--danger-color);">0</div>
+                    <div class="card">
+                        <div class="muted">Unpaid Games</div>
+                        <div id="dashUnpaid" style="font-size: 24px; font-weight: 600;">0</div>
                     </div>
-                    <div class="dashboard-card">
-                        <h3>YTD Expenses</h3>
-                        <div id="dashYTDExpenses" style="font-size: 2rem; font-weight: 700; color: var(--success-color);">$0</div>
+                    <div class="card">
+                        <div class="muted">YTD Expenses</div>
+                        <div id="dashYTDExpenses" style="font-size: 24px; font-weight: 600;">$0</div>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="dashboard-grid" style="margin-bottom: 2rem;">
-                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('games')">
-                        <h3>📋 Manage Games</h3>
-                        <p>View and manage your referee assignments</p>
-                    </div>
-                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('calendar')">
-                        <h3>📅 Calendar</h3>
-                        <p>View your schedule and availability</p>
-                    </div>
-                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('mileage')">
-                        <h3>🚗 Track Mileage</h3>
-                        <p>Log your travel expenses</p>
-                    </div>
-                    <div class="dashboard-card" style="cursor: pointer;" onclick="showScreen('reports')">
-                        <h3>📊 Reports</h3>
-                        <p>View earnings and expense reports</p>
-                    </div>
-                </div>
-
-                <!-- Upcoming Games Section -->
-                <div class="dashboard-card">
-                    <div class="flex" style="align-items: center; margin-bottom: 1rem;">
-                        <h3 style="margin: 0;">Upcoming Games (Next 7 Days)</h3>
+                <div class="section">
+                    <div class="flex">
+                        <h3 style="margin:0;">Upcoming (Next 7 Days)</h3>
                         <div class="spacer"></div>
-                        <button class="btn btn-small secondary" data-screen="games" onclick="showScreen('games')">View All Games</button>
+                        <button class="btn btn-small secondary" data-screen="games" onclick="showScreen('games')">Go to Games</button>
                     </div>
                     <div class="table-container">
                         <table id="upcomingTable">
