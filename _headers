@@ -6,14 +6,16 @@
   Pragma: no-cache
   Expires: 0
 
-# Specific cache control for static assets
-*.css
+# Specific cache control for CSS files
+/*.css
   Cache-Control: public, max-age=300
 
-*.js
+# Specific cache control for JavaScript files
+/*.js
   Cache-Control: public, max-age=300
 
-*.html
+# Specific cache control for HTML files
+/*.html
   Cache-Control: no-cache, no-store, must-revalidate
 
 # Service Worker should not be cached
