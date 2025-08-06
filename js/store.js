@@ -30,12 +30,16 @@ const Store = (() => {
   return {
     getState: () => state,
     
+    getGames() {
+      return Promise.resolve([...state.games]);
+    },
+    
     addGame(game) {
       state.lastId += 1;
       game.id = state.lastId;
       state.games.push(game);
       persist();
-      return game;
+      return Promise.resolve(game);
     },
     
     updateGame(id, partial) {
@@ -43,16 +47,24 @@ const Store = (() => {
       if (idx >= 0) {
         state.games[idx] = { ...state.games[idx], ...partial };
         persist();
+        return Promise.resolve(state.games[idx]);
       }
+      return Promise.reject(new Error('Game not found'));
     },
     
     deleteGame(id) {
+      const gameExists = state.games.some(g => g.id === id);
+      if (!gameExists) {
+        return Promise.reject(new Error('Game not found'));
+      }
+      
       state.games = state.games.filter(g => g.id !== id);
       // Also unlink expenses pointing to that game
       state.expenses = state.expenses.map(e => e.gameId === id ? {...e, gameId: null} : e);
       // Also unlink mileage pointing to that game
       state.mileage = state.mileage.map(m => m.gameId === id ? {...m, gameId: null} : m);
       persist();
+      return Promise.resolve();
     },
     
     addExpense(exp) {
@@ -103,3 +115,6 @@ const Store = (() => {
     }
   };
 })();
+
+// Make store available globally
+window.store = Store;

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar - Ref Assistant</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional referee game and expense tracking application">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Ref Assistant">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/calendar.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body class="calendar-page">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="whistle-icon">
+                        <svg viewBox="0 0 32 32" fill="currentColor">
+                            <circle cx="16" cy="16" r="16" fill="#3b82f6"/>
+                            <g fill="white">
+                                <rect x="8" y="7" width="3" height="18" rx="1"/>
+                                <rect x="8" y="7" width="11" height="3" rx="1"/>
+                                <rect x="8" y="14" width="8" height="3" rx="1"/>
+                                <rect x="16" y="7" width="3" height="10" rx="1"/>
+                                <path d="M 13 17 L 19 25 L 16 25 L 11 17 Z"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <h1>Ref Assistant</h1>
+                </div>
+                <nav class="nav-links">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                    <a href="calendar.html" class="nav-link active">Calendar</a>
+                </nav>
+                <div class="header-actions">
+                    <button id="userMenuBtn" class="user-menu-btn">
+                        <span id="userInitials">U</span>
+                    </button>
+                    <div id="userMenu" class="user-menu hidden">
+                        <button id="signOutBtn" class="menu-item">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h2>Game Calendar</h2>
+                <div class="page-actions">
+                    <button class="btn secondary" id="todayBtn">Today</button>
+                    <button class="btn primary" id="addGameBtn">
+                        <span class="btn-icon">+</span>
+                        Add Game
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar Controls -->
+            <div class="calendar-controls">
+                <div class="calendar-nav">
+                    <button class="btn secondary" id="prevBtn">
+                        <span class="btn-icon">‹</span>
+                    </button>
+                    <h3 id="currentMonth">August 2025</h3>
+                    <button class="btn secondary" id="nextBtn">
+                        <span class="btn-icon">›</span>
+                    </button>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="month">Month</button>
+                    <button class="view-btn" data-view="week">Week</button>
+                    <button class="view-btn" data-view="day">Day</button>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-container">
+                <div id="calendarGrid" class="calendar-grid">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+
+            <!-- Game Details Sidebar -->
+            <div id="gameDetailsSidebar" class="game-details-sidebar hidden">
+                <div class="sidebar-header">
+                    <h3>Game Details</h3>
+                    <button id="closeSidebar" class="close-btn">×</button>
+                </div>
+                <div class="sidebar-content" id="gameDetailsContent">
+                    <!-- Game details will be loaded here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Game Modal -->
+    <div id="addGameModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Game</h3>
+                <button class="close-btn" id="closeAddGameModal">×</button>
+            </div>
+            <form id="addGameForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameDate">Date</label>
+                        <input type="date" id="gameDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gameTime">Time</label>
+                        <input type="time" id="gameTime" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="gameVenue">Venue</label>
+                    <input type="text" id="gameVenue" required placeholder="Game location">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="homeTeam">Home Team</label>
+                        <input type="text" id="homeTeam" required placeholder="Home team name">
+                    </div>
+                    <div class="form-group">
+                        <label for="awayTeam">Away Team</label>
+                        <input type="text" id="awayTeam" required placeholder="Away team name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gameLevel">Level</label>
+                        <select id="gameLevel" required>
+                            <option value="">Select level</option>
+                            <option value="youth">Youth</option>
+                            <option value="high-school">High School</option>
+                            <option value="college">College</option>
+                            <option value="professional">Professional</option>
+                            <option value="recreational">Recreational</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gamePosition">Position</label>
+                        <select id="gamePosition" required>
+                            <option value="">Select position</option>
+                            <option value="referee">Referee</option>
+                            <option value="umpire">Umpire</option>
+                            <option value="linesman">Linesman</option>
+                            <option value="field-judge">Field Judge</option>
+                            <option value="back-judge">Back Judge</option>
+                            <option value="side-judge">Side Judge</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gamePay">Pay Amount ($)</label>
+                        <input type="number" id="gamePay" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="gameStatus">Status</label>
+                        <select id="gameStatus" required>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="gameNotes">Notes</label>
+                    <textarea id="gameNotes" rows="3" placeholder="Additional notes about the game"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn secondary" id="cancelAddGame">Cancel</button>
+                    <button type="submit" class="btn primary">Add Game</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Game Modal -->
+    <div id="editGameModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Game</h3>
+                <button class="close-btn" id="closeEditGameModal">×</button>
+            </div>
+            <form id="editGameForm" class="modal-form">
+                <input type="hidden" id="editGameId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGameDate">Date</label>
+                        <input type="date" id="editGameDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGameTime">Time</label>
+                        <input type="time" id="editGameTime" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editGameVenue">Venue</label>
+                    <input type="text" id="editGameVenue" required placeholder="Game location">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editHomeTeam">Home Team</label>
+                        <input type="text" id="editHomeTeam" required placeholder="Home team name">
+                    </div>
+                    <div class="form-group">
+                        <label for="editAwayTeam">Away Team</label>
+                        <input type="text" id="editAwayTeam" required placeholder="Away team name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGameLevel">Level</label>
+                        <select id="editGameLevel" required>
+                            <option value="">Select level</option>
+                            <option value="youth">Youth</option>
+                            <option value="high-school">High School</option>
+                            <option value="college">College</option>
+                            <option value="professional">Professional</option>
+                            <option value="recreational">Recreational</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGamePosition">Position</label>
+                        <select id="editGamePosition" required>
+                            <option value="">Select position</option>
+                            <option value="referee">Referee</option>
+                            <option value="umpire">Umpire</option>
+                            <option value="linesman">Linesman</option>
+                            <option value="field-judge">Field Judge</option>
+                            <option value="back-judge">Back Judge</option>
+                            <option value="side-judge">Side Judge</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGamePay">Pay Amount ($)</label>
+                        <input type="number" id="editGamePay" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="editGameStatus">Status</label>
+                        <select id="editGameStatus" required>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editGameNotes">Notes</label>
+                    <textarea id="editGameNotes" rows="3" placeholder="Additional notes about the game"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn danger" id="deleteGameBtn">Delete Game</button>
+                    <div class="form-actions-right">
+                        <button type="button" class="btn secondary" id="cancelEditGame">Cancel</button>
+                        <button type="submit" class="btn primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCa_QlgP14-ZHaZslG1JN0jLtSUYtxlUNE",
+            authDomain: "sample-firebase-ai-app-a3ded.firebaseapp.com",
+            projectId: "sample-firebase-ai-app-a3ded",
+            storageBucket: "sample-firebase-ai-app-a3ded.firebasestorage.app",
+            messagingSenderId: "551093175028",
+            appId: "1:551093175028:web:00ecb556ce6dc10f8054a1"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        window.firebaseApp = app;
+        window.firebaseAuth = getAuth(app);
+        window.firebaseDb = getFirestore(app);
+    </script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/calendar.js"></script>
+</body>
+</html>

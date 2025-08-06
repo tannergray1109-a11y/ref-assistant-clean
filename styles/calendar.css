@@ -1,0 +1,488 @@
+/* Calendar Page Styles */
+
+.calendar-page {
+    background: var(--bg-secondary);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.page-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Calendar Controls */
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.calendar-nav h3 {
+    margin: 0;
+    min-width: 150px;
+    text-align: center;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.calendar-nav .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.calendar-nav .btn-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.view-toggle {
+    display: flex;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 0.25rem;
+    border: 1px solid var(--border-color);
+}
+
+.view-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.view-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.view-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Calendar Container */
+.calendar-container {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Calendar Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-header {
+    display: contents;
+}
+
+.calendar-day-header {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+
+.calendar-day {
+    min-height: 120px;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-day:hover {
+    background: var(--bg-secondary);
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-day.other-month {
+    background: var(--bg-secondary);
+    opacity: 0.6;
+}
+
+.calendar-day.today {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.calendar-day.selected {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.day-number {
+    padding: 0.75rem 0.5rem 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.calendar-day.other-month .day-number {
+    color: var(--text-tertiary);
+}
+
+.calendar-day.today .day-number {
+    color: var(--primary-color);
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.25rem 0.5rem;
+}
+
+/* Game Events */
+.day-events {
+    padding: 0 0.5rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.game-event {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.game-event:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.game-event.completed {
+    background: var(--success-color);
+}
+
+.game-event.cancelled {
+    background: var(--danger-color);
+}
+
+.game-event.confirmed {
+    background: var(--warning-color);
+}
+
+.more-events {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+}
+
+.more-events:hover {
+    color: var(--primary-color);
+}
+
+/* Game Details Sidebar */
+.game-details-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+}
+
+.game-details-sidebar.visible {
+    transform: translateX(0);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+}
+
+.game-detail-item {
+    margin-bottom: 1.5rem;
+}
+
+.game-detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.game-detail-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.game-detail-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Week View */
+.calendar-grid.week-view {
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-grid.week-view .calendar-day {
+    min-height: 400px;
+}
+
+/* Day View */
+.calendar-grid.day-view {
+    grid-template-columns: 1fr;
+}
+
+.calendar-grid.day-view .calendar-day {
+    min-height: 600px;
+}
+
+/* Time Slots for Day/Week View */
+.time-slots {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.time-slot {
+    flex: 1;
+    border-bottom: 1px solid var(--border-light);
+    padding: 0.5rem;
+    position: relative;
+    min-height: 60px;
+}
+
+.time-slot-label {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    position: absolute;
+    top: 0.25rem;
+    left: 0.5rem;
+}
+
+.time-slot-events {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .calendar-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .calendar-nav {
+        justify-content: space-between;
+    }
+    
+    .calendar-nav h3 {
+        min-width: auto;
+    }
+    
+    .view-toggle {
+        justify-content: center;
+    }
+    
+    .calendar-day {
+        min-height: 80px;
+    }
+    
+    .game-details-sidebar {
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-day {
+        min-height: 60px;
+    }
+    
+    .day-number {
+        padding: 0.5rem 0.25rem 0.25rem;
+        font-size: 0.75rem;
+    }
+    
+    .game-event {
+        font-size: 0.625rem;
+        padding: 0.125rem 0.25rem;
+    }
+    
+    .calendar-day-header {
+        padding: 0.75rem 0.25rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Loading States */
+.calendar-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    color: var(--text-secondary);
+}
+
+.calendar-loading .spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+/* Empty State */
+.calendar-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.calendar-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.calendar-empty h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.calendar-empty p {
+    margin: 0;
+    max-width: 300px;
+}
+
+/* Animation for new events */
+@keyframes slideInEvent {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-event.new {
+    animation: slideInEvent 0.3s ease;
+}
+
+/* Today indicator */
+.today-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 0 0 3px 3px;
+}
+
+/* Status indicators */
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-dot.scheduled {
+    background: var(--info-color);
+}
+
+.status-dot.confirmed {
+    background: var(--warning-color);
+}
+
+.status-dot.completed {
+    background: var(--success-color);
+}
+
+.status-dot.cancelled {
+    background: var(--danger-color);
+}
