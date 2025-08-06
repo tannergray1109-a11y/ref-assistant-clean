@@ -150,10 +150,18 @@ body {
   transition: transform 0.3s ease;
   overflow-y: auto;
   padding: 1rem;
+  display: flex !important;
+  flex-direction: column;
 }
 
 .sidebar.active {
   transform: translateX(0);
+}
+
+/* Ensure sidebar content is visible */
+.sidebar * {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Navigation sections styling is handled by .sidebar */
