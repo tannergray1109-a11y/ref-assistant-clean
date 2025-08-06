@@ -281,10 +281,10 @@
 }
 
 .game-event {
-    background: var(--primary-color);
+    background: #4f46e5;
     color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
@@ -292,23 +292,56 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .game-event:hover {
-    background: var(--primary-hover);
+    background: #3730a3;
     transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.game-event .event-time {
+    font-weight: 600;
+    font-size: 0.7rem;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.game-event .event-home {
+    font-weight: 500;
+    margin-left: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .game-event.completed {
-    background: var(--success-color);
+    background: #059669;
+}
+
+.game-event.completed:hover {
+    background: #047857;
 }
 
 .game-event.cancelled {
-    background: var(--danger-color);
+    background: #dc2626;
+}
+
+.game-event.cancelled:hover {
+    background: #b91c1c;
 }
 
 .game-event.confirmed {
-    background: var(--warning-color);
+    background: #d97706;
+}
+
+.game-event.confirmed:hover {
+    background: #b45309;
 }
 
 .more-events {
@@ -374,6 +407,28 @@
 .game-detail-value {
     color: var(--text-primary);
     font-size: 1rem;
+}
+
+/* Detailed View Game Event Styles */
+.calendar-grid.day-view .game-event {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.5rem 0.75rem;
+    min-height: 2.5rem;
+    border-radius: 8px;
+}
+
+.calendar-grid.day-view .game-event .game-time {
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+    opacity: 0.9;
+}
+
+.calendar-grid.day-view .game-event .game-home {
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1.2;
 }
 
 .game-detail-actions {

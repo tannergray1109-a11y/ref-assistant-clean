@@ -22,25 +22,8 @@ class CalendarManager {
             btn.addEventListener('click', (e) => this.changeView(e.target.dataset.view));
         });
 
-        // Add game modal
-        document.getElementById('addGameBtn').addEventListener('click', () => this.openAddGameModal());
-        document.getElementById('closeAddGameModal').addEventListener('click', () => this.closeAddGameModal());
-        document.getElementById('cancelAddGame').addEventListener('click', () => this.closeAddGameModal());
-        document.getElementById('addGameForm').addEventListener('submit', (e) => this.handleAddGame(e));
-
         // Game details sidebar
         document.getElementById('closeSidebar').addEventListener('click', () => this.closeGameDetails());
-
-        // Click outside modals to close
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.closeModals();
-            }
-        });
-
-        // Set default date for add game form
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('gameDate').value = today;
     }
 
     navigatePrevious() {
@@ -246,14 +229,14 @@ class CalendarManager {
                 return `
                     <div class="game-event ${statusClass}" data-game-id="${game.id}">
                         <div class="game-time">${time}</div>
-                        <div class="game-teams">${game.home} vs ${game.away}</div>
-                        <div class="game-league">${game.league || ''}</div>
+                        <div class="game-home">${game.home}</div>
                     </div>
                 `;
             } else {
                 return `
                     <div class="game-event ${statusClass}" data-game-id="${game.id}">
-                        ${time} - ${game.home} vs ${game.away}
+                        <span class="event-time">${time}</span>
+                        <span class="event-home">${game.home}</span>
                     </div>
                 `;
             }
@@ -324,59 +307,7 @@ class CalendarManager {
         return `${displayHour}:${minutes} ${ampm}`;
     }
 
-    // Modal Management
-    openAddGameModal() {
-        const modal = document.getElementById('addGameModal');
-        modal.classList.remove('hidden');
-        
-        // Set default date to selected date or today
-        const defaultDate = this.selectedDate || new Date();
-        document.getElementById('gameDate').value = defaultDate.toISOString().split('T')[0];
-        
-        // Focus first input
-        setTimeout(() => {
-            document.getElementById('gameDate').focus();
-        }, 100);
-    }
-
-    closeAddGameModal() {
-        document.getElementById('addGameModal').classList.add('hidden');
-        document.getElementById('addGameForm').reset();
-    }
-
-    closeModals() {
-        this.closeAddGameModal();
-    }
-
     // Game Management
-    async handleAddGame(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const gameData = {
-            id: Date.now().toString(),
-            date: formData.get('date'),
-            time: formData.get('time'),
-            league: formData.get('league'),
-            home: formData.get('home'),
-            away: formData.get('away'),
-            pay: parseFloat(formData.get('pay')) || 0,
-            status: 'scheduled',
-            createdAt: new Date().toISOString()
-        };
-
-        try {
-            await window.store.addGame(gameData);
-            this.games.push(gameData);
-            this.renderCalendar();
-            this.closeAddGameModal();
-            this.showNotification('Game added successfully!', 'success');
-        } catch (error) {
-            console.error('Error adding game:', error);
-            this.showNotification('Error adding game. Please try again.', 'error');
-        }
-    }
-
     async loadGames() {
         try {
             this.games = await window.store.getGames();
