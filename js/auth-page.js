@@ -3,10 +3,20 @@
 
 // Wait for Firebase to be initialized
 function waitForFirebase() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds timeout
+    
     const checkFirebase = () => {
+      attempts++;
+      console.log(`Firebase check attempt ${attempts}...`);
+      
       if (window.firebaseAuth && window.firebaseDb) {
+        console.log('✅ Firebase initialized successfully');
         resolve();
+      } else if (attempts >= maxAttempts) {
+        console.error('❌ Firebase initialization timeout');
+        reject(new Error('Firebase failed to initialize within 5 seconds'));
       } else {
         setTimeout(checkFirebase, 100);
       }
@@ -23,16 +33,28 @@ let isSignUpMode = false;
 const AuthService = {
   // Initialize auth service
   async init() {
-    await waitForFirebase();
-    // Set up auth state listener
-    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-    onAuthStateChanged(window.firebaseAuth, (user) => {
-      currentUser = user;
-      if (user) {
-        // User is signed in, redirect to main app
-        window.location.href = 'index.html';
-      }
-    });
+    try {
+      console.log('🚀 Initializing auth service...');
+      await waitForFirebase();
+      console.log('✅ Firebase ready, setting up auth listener...');
+      
+      // Set up auth state listener
+      const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+      onAuthStateChanged(window.firebaseAuth, (user) => {
+        console.log('Auth state changed:', user ? `Logged in as ${user.email}` : 'Not logged in');
+        currentUser = user;
+        if (user) {
+          // User is signed in, redirect to main app
+          console.log('✅ User authenticated, redirecting to main app...');
+          window.location.href = 'index.html';
+        }
+      });
+      console.log('✅ Auth service initialized successfully');
+    } catch (error) {
+      console.error('❌ Auth service initialization failed:', error);
+      showAuthError('Failed to initialize authentication. Please refresh the page.');
+      throw error;
+    }
   },
 
   // Sign up new user
@@ -117,6 +139,15 @@ function setLoading(isLoading) {
       btn.disabled = true;
       text.classList.add('hidden');
       spinner.classList.remove('hidden');
+      
+      // Safety timeout - automatically hide spinner after 30 seconds
+      setTimeout(() => {
+        if (spinner && !spinner.classList.contains('hidden')) {
+          console.warn('⚠️ Loading timeout - hiding spinner');
+          setLoading(false);
+          showAuthError('Request timed out. Please check your connection and try again.');
+        }
+      }, 30000);
     } else {
       btn.disabled = false;
       text.classList.remove('hidden');
@@ -178,26 +209,48 @@ function getFirebaseErrorMessage(error) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize auth service
-  await AuthService.init();
+  console.log('🎯 Auth page DOM loaded');
+  
+  // Ensure all spinners are hidden on page load
+  setLoading(false);
+  
+  // Initialize auth service with error handling
+  try {
+    await AuthService.init();
+  } catch (error) {
+    console.error('❌ Failed to initialize auth:', error);
+    showAuthError('Authentication service failed to load. Please refresh the page.');
+    return;
+  }
   
   // Login Form
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log('📧 Login form submitted');
       setLoading(true);
       
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      
-      const result = await AuthService.signIn(email, password);
-      setLoading(false);
-      
-      if (!result.success) {
-        showAuthError(getFirebaseErrorMessage(result.error));
+      try {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        console.log('🔐 Attempting to sign in:', email);
+        const result = await AuthService.signIn(email, password);
+        setLoading(false);
+        
+        if (!result.success) {
+          console.error('❌ Sign in failed:', result.error);
+          showAuthError(getFirebaseErrorMessage(result.error));
+        } else {
+          console.log('✅ Sign in successful');
+        }
+        // If successful, user will be redirected by auth state listener
+      } catch (error) {
+        console.error('❌ Login error:', error);
+        setLoading(false);
+        showAuthError('An unexpected error occurred. Please try again.');
       }
-      // If successful, user will be redirected by auth state listener
     });
   }
   
